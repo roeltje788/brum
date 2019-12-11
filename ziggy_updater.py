@@ -22,10 +22,10 @@ def is_correct_date(requested_date):
     try:
         date = open('.date.txt','r')
         dates = date.read().splitlines()
-        read_date = dates[0]
+        read_date = dates[0].rstrip()
         date.close()
 
-        print ("Ziggy is set to date: {}".format(read_date))
+        print ("Ziggy is set to date: {}".format(read_date.rstrip()))
 
         if read_date != format(requested_date):
             print ("Ziggy will be updated, date is not the same")

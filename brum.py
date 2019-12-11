@@ -3,6 +3,7 @@ import sys
 
 # CUSTOM
 from mode_ziggy import *
+from mode_ripe import *
 
 def main(argv):
 
@@ -22,8 +23,7 @@ def main(argv):
         ask_ziggy(argv)
     if (mode == 'ripe'):
         print ('Mode set to: RIPE')
-    if (mode == 'routinator'):
-        print ('Mode set to: Routinator')
+        ask_ripe(argv)
 
 #MAIN
 
