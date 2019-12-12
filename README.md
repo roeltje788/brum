@@ -11,12 +11,7 @@ Checks if an IP-address or domain name is inside of a AS IP-prefix protected by 
 The following packages needs to be installed before Brum can be used:
 
 - python3-dateutil
-- faketime
-- routinator
-- RUST
 - netaddr (pip3 install netaddr)
-
-(Ziggy is automatically installed as a submodule)
 
 ## Arguments
 
