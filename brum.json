@@ -1,0 +1,14 @@
+[
+{
+"version":"0.0.4",
+"supported":
+    {
+    "analyse":"Brum will analyse a list of ip-addresses (must be a JSON file) ",
+    "createreport":"Brum will use a file created by *analyse* and generate information about this file",
+    "readreport":"Brum will read a .json file from *createreport* and present it",
+    "getroot":"Brum will download all the Authorative Root servers from IANA",
+    "help":"Brum will give more info on the different functions",
+    "exit":"Exit brum"
+    }
+}
+]

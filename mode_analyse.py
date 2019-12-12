@@ -67,7 +67,7 @@ def checkip(roa_protected,sub_list_part,dns_servers):
 
     roa_protected.put(protected)
 
-def ask_ripe(argv):
+def analyse_data(argv):
 
     try:
         opts, args = getopt.getopt(argv,"m:f:w:",["mode=","file=","workers="])
