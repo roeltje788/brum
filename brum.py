@@ -2,7 +2,6 @@
 import sys
 
 # CUSTOM
-from mode_ziggy import *
 from mode_ripe import *
 
 def main(argv):
@@ -12,15 +11,12 @@ def main(argv):
         mode = sys.argv[2]
 
     except e:
-        print ('Possible modes are ziggy,ripe or routinator')
-        print ('Program exists with exception message:'+ e)
+        print ('Possible modes are ripe')
+        print ('Program exits with exception message:'+ e)
         sys.exit(2)
 
     #Set and run mode
 
-    if (mode == 'ziggy'):
-        print ('Mode set to: Ziggy')
-        ask_ziggy(argv)
     if (mode == 'ripe'):
         print ('Mode set to: RIPE')
         ask_ripe(argv)
@@ -29,13 +25,3 @@ def main(argv):
 
 if __name__ == "__main__":
    main(sys.argv[1:])
-
-'''
-first_file = open('first','r')
-second_file = open('second','r')
-
-for line in first_file:
-    #print (line)
-    if line not in second_file.read():
-        print ('')
-'''
