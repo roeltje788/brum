@@ -2,9 +2,9 @@
 import sys
 
 # CUSTOM
-from mode_analyse import *
+from mode_lookup import *
 from mode_report import *
-from mode_get_root import *
+from mode_getzone import *
 from mode_help import *
 
 def main(argv):
@@ -18,9 +18,10 @@ def main(argv):
         program_version     = file['version']
         program_supported   = file['supported']
 
-    print ("Welcome to Brum. A RPKI deployment analysis tool")
-    print ("Current version of Brum is: {}".format(program_version))
-    print ("Currently Brum supports the following functions:\n")
+    print ("Welcome to Brum. A RPKI deployment analysis tool (Version:{})".format(program_version))
+    print ("Interactive mode active, since no arguments are given")
+    print ("Following functions are supported:\n")
+    #print (u'\u2713')
     for p in program_supported:
         print ("\t{}".format(p))
     print ("\n")
@@ -29,12 +30,12 @@ def main(argv):
 
     while (option != "exit"):
 
-        option = input("Please type one of the names above or help to get more information about the options:")
+        option = input("Please type one of the names above or help for more info:")
 
         #Set and run mode
 
-        if (option == 'analyse'):
-            print ('Mode set to: Analyse')
+        if (option == 'lookup'):
+            print ('Mode set to: Lookup')
             analyse_data(argv)
         elif (option == 'createreport'):
             print ('Mode set to: Create Report')
@@ -42,14 +43,17 @@ def main(argv):
         elif (option == 'readreport'):
             print ('Mode set to: Read Report ')
             read_report(argv)
-        elif (option == 'getroot'):
-            print ('Mode set to: Get Authorative Root servers')
-            get_root(argv)
+        elif (option == 'getroothints'):
+            print ('Mode set to: Get Authorative Hint Root servers')
+            get_root_hints(argv)
+        elif (option == 'getrootzone'):
+            print ('Mode set to: Get entire Authorative Root server zone')
+            get_root_zone(argv)
         elif (option == 'help'):
             print ('Mode set to: Help')
             give_help(argv)
         elif (option == 'exit'):
-            print ('Brum will close now')
+           print ('Closing Brum')
         else:
             print ('That mode is not (yet) supported. Try Again')
 

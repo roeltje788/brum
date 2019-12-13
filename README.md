@@ -8,6 +8,8 @@ Checks if an IP-address or domain name is inside of a AS IP-prefix protected by 
 
 The following packages needs to be installed before Brum can be used:
 
+- dns-zonefile (install: npm install dns-zonefile)
+
 ## Arguments
 
 The following arguments can be used:
