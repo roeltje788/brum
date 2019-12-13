@@ -2,11 +2,14 @@
 import os
 import json
 import requests
+import sys
+import getopt
+import argparse
 
-def write_zone_to_file(root_zone,output_file):
+def write_zone_to_file(zone,output_file):
 
     with open(output_file, 'w') as outfile:
-        json.dump(root_zone, outfile)
+        json.dump(zone, outfile)
     print ('File written to disk')
 
 def download_zone(url):
@@ -60,9 +63,17 @@ def download_zone(url):
     except Exception as e:
         print ("{}".format(e))
 
-def get_zone(url):
+def get_output_file(argv):
 
-    output = input("Where should this file be saved (including file name with .json extension)?: ")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("getroothints",help="Output file for this function")
+    parser.add_argument("-o", "--output",help="Output file for this function")
+    args = parser.parse_args()
+    output = args.output
+
+    return output
+
+def get_zone(url,output):
 
     zone = download_zone(url)
 
@@ -70,11 +81,16 @@ def get_zone(url):
 
 def get_root_zone(argv):
 
+    output = get_output_file(argv)
+
     url = 'https://www.internic.net/domain/root.zone'
-    get_zone(url)
+    get_zone(url,output)
 
 
 def get_root_hints(argv):
 
+    output = get_output_file(argv)
+
     url = 'https://www.internic.net/domain/named.root'
-    get_zone(url)
+    get_zone(url,output)
+

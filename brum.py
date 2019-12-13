@@ -19,43 +19,35 @@ def main(argv):
         program_supported   = file['supported']
 
     print ("Welcome to Brum. A RPKI deployment analysis tool (Version:{})".format(program_version))
-    print ("Interactive mode active, since no arguments are given")
-    print ("Following functions are supported:\n")
-    #print (u'\u2713')
+    print ("Following functions are supported: ", end=' ')
+
     for p in program_supported:
-        print ("\t{}".format(p))
+        print ("{}".format(p),end=' ')
     print ("\n")
 
     option = ''
 
-    while (option != "exit"):
+    try:
+        option = sys.argv[1]
+    except:
+        pass # message is given later
 
-        option = input("Please type one of the names above or help for more info:")
+    #Set and run mode
 
-        #Set and run mode
-
-        if (option == 'lookup'):
-            print ('Mode set to: Lookup')
-            analyse_data(argv)
-        elif (option == 'createreport'):
-            print ('Mode set to: Create Report')
-            create_report(argv)
-        elif (option == 'readreport'):
-            print ('Mode set to: Read Report ')
-            read_report(argv)
-        elif (option == 'getroothints'):
-            print ('Mode set to: Get Authorative Hint Root servers')
-            get_root_hints(argv)
-        elif (option == 'getrootzone'):
-            print ('Mode set to: Get entire Authorative Root server zone')
-            get_root_zone(argv)
-        elif (option == 'help'):
-            print ('Mode set to: Help')
-            give_help(argv)
-        elif (option == 'exit'):
-           print ('Closing Brum')
-        else:
-            print ('That mode is not (yet) supported. Try Again')
+    if (option == 'lookup'):
+        analyse_data(argv)
+    elif (option == 'createreport'):
+        create_report(argv)
+    elif (option == 'readreport'):
+        read_report(argv)
+    elif (option == 'getroothints'):
+        get_root_hints(argv)
+    elif (option == 'getrootzone'):
+        get_root_zone(argv)
+    elif (option == 'help'):
+        give_help(argv)
+    else:
+        print ('That mode is not (yet) supported.')
 
 #MAIN
 
