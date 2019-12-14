@@ -54,7 +54,6 @@ This program is used to convert the .zone file from IANA to a usable .json file.
 ```
 npm install dns-zonefile
 ```
-<br />
 Source:https://www.npmjs.com/package/dns-zonefile
 
 ## Arguments
