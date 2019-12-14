@@ -89,47 +89,32 @@ def get_servers_from_file(input):
 
     return dns_servers[0]
 
-def analyse_data(argv):
+def wait_for_threads(threads):
 
-    try:
-        opts, args = getopt.getopt(argv,"i:o:",["input=","output="])
-    except getopt.GetoptError:
-        print ('use arguments -i and -o')
-        sys.exit(2)
-    except:
-        print ('Some argument is incorrectly set, review the usage of this program in the documentation')
+    for t in threads:
+        t.join()
 
-    input = ''
-    output = ''
+def analyse_data(input,output,workers):
+
     workers = 0 #TODO: load workers from json file
-
-    #Loop through arguments
-    for opt, arg in opts:
-
-        if opt in ("-i", "--ip"): #Set input file
-           input = arg
-        if opt in ("-a", "--asn"): #Set Output file
-           output = arg
 
     dns_servers = get_servers_from_file(input) #Get servers
     file_length = len(dns_servers)
     print ('The file contains {} rows'.format(file_length))
 
-    start = time.time() #Start time
+    start = time.time() #Start keeping check of the time
 
-    checked_list = queue.Queue()
+    checked_list = queue.Queue() # items in this list have been checked and will be written to the disk
 
-    sub_list_parts = list(split(range(file_length), workers))
+    sub_list_parts = list(split(range(file_length), workers)) #Create sublists for workers to analyse
 
     threads = create_workers(sub_list_part,dns_servers) #Create threads that lookup an IP at RIPE
 
     #TODO: CREATE THREAD THAT WRITES TO DISK
 
-    #Wait for threads to join back
-    for t in threads:
-        t.join()
+    wait_for_threads(threads) #Wait for threads to join back
 
-    end = time.time()
+    end = time.time() #End keeping track of time
 
     time_difference = end - start
     print("Lookup is done, it took:{} seconds",format(time_difference)) #Give back the result

@@ -1,0 +1,9 @@
+This file is meant to explain some settings in the settings.json file.
+
+Workers: 
+This the concurrent amount of threads running in the program making requests at RIPE at the same time. 
+As per the documentation (https://stat.ripe.net/docs/data_api/), there should be no more than 8 concurrent connection per IP address.
+Please respect this rule as the program otherwise may become unstable.
+If you will make more than 1000 requests/day (2 requests per line in a supplied .json file) consider creating an account as requested by RIPE 
+In any case, please use this program in an ethical way.
+
