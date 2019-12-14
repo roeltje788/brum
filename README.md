@@ -83,11 +83,13 @@ There is no official list of public resolvers to test the RPKI deployment.
 There is however a unofficial quiet extensive list on Wikipedia.
 This list is premade added to this application. Location is in /public_resolvers in the root folder. 
 The .json file can directly be used. The .csv file is purely for convenience and is not meant for this program.
+<br />
 Source: https://en.wikipedia.org/wiki/Public_recursive_name_server
 ### IANA
 IANA is used to retrieve both the "root zone hints" and the complete "root zone". 
 Both can be downloaded from within Brum and both can be used for analysis.
 Please be mindful in using this function and don't keep downloading these list for no good reason. 
+<br />
 Source: https://www.iana.org/domains/root/files
 ### RIPE database
 RIPE is used to analyse a supplied .json in the "lookup" mode. 
