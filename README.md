@@ -1,6 +1,6 @@
 # Brum
 
-Brum is a RPKI deployment analysis tool. It's meant to analyse a zone file with ip-addresses. 
+Brum is a RPKI deployment analysis tool. 
 
 ## Workflow
 
