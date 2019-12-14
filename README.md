@@ -76,7 +76,7 @@ TODO: list modes
 ### Additional commands:
 These arguments can differ from mode to mode, but generally either or both an input file and an output are required.
 
-## Add function
+## Adding additional "modes"
 
 Currently Brum supports a certain amount of functions as described in the "mode" subsection under Arguments. 
 Additional features may be required in the future. These can be added as follows:
