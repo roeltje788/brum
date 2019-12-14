@@ -12,6 +12,8 @@ There are 3 options:
 -Public resolvers: this file comes with brum and are located in the /public_resolvers folder (only the .json is meant for Brum). 
 -"IANA root zone" or IANA "root zone hints": these files can be downloaded directly from within Brum (source below). These files will therefore always be up to date. The file can directly be used after downloading in the next step.
 -Own zone file: any right formatted .json file with the correct arguments (see below) can be used as input to Brum in the next step.
+<br />
+<br />
 TODO: how should this file look like?
 
 ### 1: lookup file
@@ -65,6 +67,7 @@ python3 brum.py <mode> <additional commands>
 
 ### Mode: 
 This is the mode that Brum will run in. The different modes are:
+<br />
 <br />
 TODO: list modes 
 
