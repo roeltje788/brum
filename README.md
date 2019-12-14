@@ -78,7 +78,7 @@ TODO: explain how to add a function
 
 This program makes use of several sources:
 
-### wiki public resolvers
+### Wikipedia public resolvers
 There is no official list of public resolvers to test the RPKI deployment. 
 There is however a unofficial quiet extensive list on Wikipedia.
 This list is premade added to this application. Location is in /public_resolvers in the root folder. 
