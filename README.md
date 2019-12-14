@@ -60,7 +60,8 @@ The following packages needs to be installed before Brum can be used:
 
 ## Arguments
 
-All possible arguments will be shown in the command line with the command: python3 brum.py -h
+All possible arguments will be shown in the command line with the command: 
+    python3 brum.py -h
 In short every command will start with python3 brum.py <mode> <additional commands>
 
 Mode: this is the mode that Brum will run in. The different modes are:
