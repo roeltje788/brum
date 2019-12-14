@@ -65,6 +65,7 @@ python3 brum.py <mode> <additional commands>
 
 ### Mode: 
 This is the mode that Brum will run in. The different modes are:
+<br />
 TODO: list modes 
 
 ### Additional commands:
