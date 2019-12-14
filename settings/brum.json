@@ -1,6 +1,6 @@
 [
 {
-"version":"0.0.5",
+"version":"0.0.7",
 "supported":
     {
     "lookup":"Brum will analyse a list of ip-addresses (must be a JSON file) ",

@@ -117,7 +117,6 @@ def analyse_data(argv):
             new_thread.start()
             threads.append(new_thread)
 
-
         for t in threads:
             t.join()
 
@@ -133,35 +132,3 @@ def analyse_data(argv):
 
         #Give back the result
         print("Protected:{}".format(final_result))
-
-        '''
-        thread1 = threading.Thread(target=checkip,args=(ip,asn,my_queue))
-        thread2 = threading.Thread(target=checkip,args=(ip,asn,my_queue))
-        thread3 = threading.Thread(target=checkip,args=(ip,asn,my_queue))
-        thread4 = threading.Thread(target=checkip,args=(ip,asn,my_queue))
-
-        thread1.start()
-        thread2.start()
-        thread3.start()
-        thread4.start()
-
-        threads = []
-
-        threads.append(thread1)
-        threads.append(thread2)
-        threads.append(thread3)
-        threads.append(thread4)
-
-        #SYNCHRONOUS EXAMPLE
-
-        syn_start = time.time()
-
-        for i in range(160):
-            result = checkip2(ip,asn,my_queue)
-            #print (result)
-
-        syn_end = time.time()
-
-        syn_time_difference = syn_end - syn_start
-        print('SYNCHRONOUS EXAMPLE: {}'.format(syn_time_difference))
-        '''
