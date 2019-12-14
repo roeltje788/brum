@@ -4,7 +4,7 @@ Checks if an IP-address or domain name is inside of a AS IP-prefix protected by 
 
 ![alt text](https://live.staticflickr.com/7177/7083455607_7bbb823abe_b.jpg)
 
-##JSON
+## JSON
 
 Currently an file used as input to Brum must be of time .json. 
 Other filetypes such as .yml or .csv are NOT supported.
@@ -14,7 +14,7 @@ Please convert first before usage.
 
 Brum is meant to be used in the following order:
 
-# 0: get zone file
+### 0: get zone file
 First a file should be created with the zone file to be used by Brum.
 There are 3 options:
 -Public resolvers: this file comes with brum and are located in the /public_resolvers folder (only the .json is meant for Brum). 
@@ -22,11 +22,11 @@ There are 3 options:
 -Own zone file: any right formatted .json file with the correct arguments (see below) can be used as input to Brum in the next step.
 TODO: how should this file look like?
 
-# 1: lookup file
+### 1: lookup file
 The next step is to lookup a provided file. By lookup is meant to get the certain information (currently: prefix,ASN and if a RPKI certificate is for this prefix) from RIPE. 
 These results are then written to a .json file at the desired location.
 
-# 2: create report
+### 2: create report
 The next step is to use the file created in the previous step for analysis. 
 Different questions about the RPKI deployment in the list provided will be answered.
 Such as, but not limited: How many have RPKI deployed? What is the difference in ipv4 and ipv6?
@@ -47,7 +47,7 @@ By this division, step 1 and 2 can be run on a different machine if needed.
 In addition, if other functions will be added to Brum in the future, there is no need to ask RIPE again.
 The file in step 1 can used again in step 2 giving more information in the second run. 
 
-# 3: read report
+### 3: read report
 The output of step 2 is a .json file this can be used by another program.
 To make it more human friendly, this step will take the .json file created in step 2 and generate a readable file with the results.
 
