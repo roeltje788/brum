@@ -72,7 +72,7 @@ This is the mode that Brum will run in. The different modes are:
 TODO: list modes 
 
 ### Additional commands:
-These arguments can differ from mode to mode, but generally either or both an input file and a output are required.
+These arguments can differ from mode to mode, but generally either or both an input file and an output are required.
 
 ## Add function
 
