@@ -63,10 +63,10 @@ In short every command will start with:
 python3 brum.py <mode> <additional commands>
 ```
 
-###Mode: this is the mode that Brum will run in. The different modes are:
+### Mode: this is the mode that Brum will run in. The different modes are:
 TODO: list modes 
 
-###Additional commands:
+### Additional commands:
 These arguments can differ from mode to mode, but generally either or both an input file and a output are required.
 
 ## Add function
