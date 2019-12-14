@@ -4,12 +4,6 @@ Checks if an IP-address or domain name is inside of a AS IP-prefix protected by 
 
 ![alt text](https://live.staticflickr.com/7177/7083455607_7bbb823abe_b.jpg)
 
-## JSON
-
-Currently an file used as input to Brum must be of time .json. 
-Other filetypes such as .yml or .csv are NOT supported.
-Please convert first before usage.
-
 ## Workflow
 
 Brum is meant to be used in the following order:
@@ -61,7 +55,9 @@ The following packages needs to be installed before Brum can be used:
 ## Arguments
 
 All possible arguments will be shown in the command line with the command: 
-    python3 brum.py -h
+```
+python3 brum.py -h
+```
 In short every command will start with python3 brum.py <mode> <additional commands>
 
 Mode: this is the mode that Brum will run in. The different modes are:
@@ -98,3 +94,8 @@ If you have any internet restrictions keep the requests in mind.
 They are simple text requests, but can add up if the supplied file is large in size.
 Source: https://stat.ripe.net/docs/data_api/
 
+## JSON
+
+Currently an file used as input to Brum must be of time .json.
+Other filetypes such as .yml or .csv are NOT supported.
+Please convert first before usage.
