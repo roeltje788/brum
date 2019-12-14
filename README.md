@@ -34,11 +34,11 @@ These answers are written to a .json file.
 
 TODO: different information depending on what arguments in the supplied file, what arguments?
 
-why write to a .json file?
+#### Why write to a .json file?
 
 By writing to a .json file, the answers can be used by another program. 
 
-why the split?
+#### Why the split?
 
 By not combine step 1 and 2. This has been considered, but is not implemented.
 Step 1 is network intensive and step 2 is CPU and RAM intensive. 
@@ -55,8 +55,8 @@ To make it more human friendly, this step will take the .json file created in st
 
 The following packages needs to be installed before Brum can be used:
 
-# dns-zonefile 
-    (install: npm install dns-zonefile)
+### dns-zonefile 
+    install: npm install dns-zonefile
 
 ## Arguments
 
