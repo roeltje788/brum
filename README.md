@@ -2,8 +2,6 @@
 
 RPKI deployment analysis tool
 
-![alt text](https://live.staticflickr.com/7177/7083455607_7bbb823abe_b.jpg)
-
 ## Workflow
 
 Brum is meant to be used in the following order:
