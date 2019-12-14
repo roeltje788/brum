@@ -76,6 +76,9 @@ These arguments can differ from mode to mode, but generally either or both an in
 
 ## Add function
 
+Currently Brum supports a certain amount of functions as described in the "mode" subsection under Arguments. 
+Additional features may be required in the future. These can be added as follows:
+
 TODO: explain how to add a function 
 
 ## Sources
