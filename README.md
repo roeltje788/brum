@@ -76,7 +76,7 @@ TODO: explain how to add a function
 
 ## Sources
 
-This program makes use of several sources to make the workflow easier:
+This program makes use of several sources:
 
 ### wiki public resolvers
 There is no official list of public resolvers to test the RPKI deployment. 
