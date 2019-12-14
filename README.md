@@ -107,6 +107,6 @@ Source: https://stat.ripe.net/docs/data_api/
 
 ## JSON
 
-Currently an file used as input to Brum must be of time .json.
+Currently a file used as input to Brum must be of type .json.
 Other filetypes such as .yml or .csv are NOT supported.
-Please convert first before usage.
+Please convert first before use.
