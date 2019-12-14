@@ -56,7 +56,7 @@ To make it more human friendly, this step will take the .json file created in st
 The following packages needs to be installed before Brum can be used:
 
 ### dns-zonefile 
-    install: npm install dns-zonefile
+    npm install dns-zonefile
 
 ## Arguments
 
