@@ -58,7 +58,7 @@ All possible arguments will be shown in the command line with the command:
 ```
 python3 brum.py -h
 ```
-In short every command will start with:
+In short every command will look similar to:
 ```
 python3 brum.py <mode> <additional commands>
 ```
