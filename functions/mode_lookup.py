@@ -171,7 +171,7 @@ def write_to_file(input,checked_list,lookup_done_token,file_length):
     while not checked_list.empty():
         tmp_result = checked_list.get()
         i = tmp_result[0]
-        json_result = tmp_result[0]
+        json_result = tmp_result[1]
         output_file[i] = json_result
 
     #Write to the output file

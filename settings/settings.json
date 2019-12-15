@@ -4,8 +4,7 @@
 "supported":
     {
     "lookup":"Brum will analyse a list of ip-addresses (must be a JSON file) ",
-    "createreport":"Brum will use a file created by *analyse* and generate information about this file",
-    "readreport":"Brum will read a .json file from *createreport* and present it",
+    "report":"Brum will use a file created by *analyse* and generate information about this file",
     "getroothints":"Brum will download all the Authorative Hint Root servers from IANA",
     "getrootzone":"Brum will download all the Authorative Root servers from IANA"
     },
