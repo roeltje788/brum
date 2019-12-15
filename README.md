@@ -110,8 +110,20 @@ They are simple text requests, but can add up if the supplied file is large in s
 <br />
 Source: https://stat.ripe.net/docs/data_api/
 
-## JSON
+## Supported input types
+
+### JSON
 
 Currently a file used as input to Brum must be of type .json.
 Other filetypes such as .yml or .csv are NOT supported.
 Please convert first before use.
+
+### CSV
+CSV is not supported, but can be converted as follows to .json.
+```
+csvtojson <csvfilepath> > <outputfile>
+```
+<br />
+<csvfilepath> is the current location of the csv file.
+<br />
+<outputfile> the location where the output .json file should be stored (with a .json extension) 
