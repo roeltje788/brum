@@ -11,7 +11,6 @@ import threading
 import math
 import time
 
-
 def split(seq, num):
     avg = len(seq) / float(num)
     out = []
@@ -114,15 +113,31 @@ def update_ticker(ticker):
     else:
         return '|'
 
-def write_to_file(input, output,checked_list,lookup_done_token,file_length):
+def write_to_file(input,checked_list,lookup_done_token,file_length):
 
     threads_done        = False #   Are the worker threads done?
     progression_counter = 0     #   This variable is used to give feedback on the progression to the user
     output_file         = ''    #   Variable to add the lookups to
     ticker              = '-'   #   Speed indicator
 
+    #Split input
+    base_dir        = os.path.dirname(input)
+    file            = os.path.splitext(os.path.basename(input))
+    file_name       = file[0]
+    file_extension  = file[1]
+
+    output_directory = '{}/{}'.format(base_dir,file_name)
+
+    os.system('mkdir -p {}'.format(output_directory))
+    os.system('mkdir -p {}/lookups'.format(output_directory))
+
+    epoch_time = int(time.time())
+
+    output = '{}/lookups/{}_{}_lookup_results.json'.format(output_directory,file_name,epoch_time)
+    os.system('cp {} {}'.format(input,output))
+
     #Copy input file to output file, simply to have a start
-    copy_command = 'cp {} {}'.format(input,output)
+    copy_command = 'cp {} {}/lookups/{}_original.json'.format(input,output_directory,file_name)
     os.system(copy_command)
 
     #Open file
@@ -171,7 +186,7 @@ def wait_for_threads(threads):
     for t in threads:
         t.join()
 
-def analyse_data(input,output,workers):
+def analyse_data(input,workers):
 
     dns_servers = get_servers_from_file(input) #Get servers
     file_length = len(dns_servers)
@@ -186,7 +201,7 @@ def analyse_data(input,output,workers):
 
     threads = create_workers(checked_list,sub_list_parts,dns_servers) #Create threads that lookup an IP at RIPE
 
-    file_writer_thread = threading.Thread(target=write_to_file,args=(input,output,checked_list,lookup_done_token,file_length))
+    file_writer_thread = threading.Thread(target=write_to_file,args=(input,checked_list,lookup_done_token,file_length))
     file_writer_thread.start()
 
     wait_for_threads(threads) #Wait for worker threads to join back in
@@ -197,5 +212,6 @@ def analyse_data(input,output,workers):
     end = time.time() #End keeping track of time
 
     time_difference = end - start
-    print("\nLookup is done, it took: {} seconds".format(time_difference)) #Give back the result
+    print('\nPossible errors in lookup may have occured. Use the report mode to analyse those.')
+    print("Lookup is done, it took: {} seconds".format(time_difference)) #Give back the result
 

@@ -6,8 +6,7 @@ import argparse
 
 # folder:functions
 from functions.mode_lookup import *
-from functions.mode_createreport import *
-from functions.mode_readreport import *
+from functions.mode_report import *
 from functions.mode_getzone import *
 
 def get_arguments(argv):
@@ -59,13 +58,9 @@ def main(argv):
     #Set and run mode
 
     if (option == 'lookup'):
-        analyse_data(arguments.input,arguments.output,workers)
-    elif (option == 'createreport'):
-        pass
-        #create_report(argv) -> TODO: dont supply argv, but values
-    elif (option == 'readreport'):
-        pass
-        #read_report(argv) -> TODO: dont supply argv, but values
+        analyse_data(arguments.input,workers)
+    elif (option == 'report'):
+        generate_report(arguments.input)
     elif (option == 'getroothints'):
         get_root_hints(arguments.output)
     elif (option == 'getrootzone'):
