@@ -132,9 +132,14 @@ csvtojson <csvfilepath> > <outputfile>
 
 Every output file of Brum will be of type .json. 
 
-## Supported operating system
+## Supported operating systems
 
 Brum is both created and tested on a Ubuntu 18.04 system. 
 Having all dependecies for Brum (see section dependencies) and a python3 interperter will probably work, but a Linux distrobution will probably give the most stable results.
+
+## File size limitations
+
+Currently Brum has no limitations on the maximum size of an input file.
+Keep in mind that having a very small filesize can give a very skewed result, have a larger file size (>1000) will give a more balanced result.
 
 
