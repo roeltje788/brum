@@ -124,9 +124,9 @@ CSV is not supported, but can be converted as follows to .json.
 csvtojson <csvfilepath> > <outputfile>
 ```
 <br />
-*csvfilepath* is the current location of the input csv file.
+<em>csvfilepath</em> is the current location of the input csv file.
 <br />
-*outputfile* the location where the output .json file should be stored (with a .json extension) 
+<em>outputfile</em> the location where the output .json file should be stored (with a .json extension) 
 
 ## Supported output filetypes
 
