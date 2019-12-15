@@ -137,7 +137,7 @@ def write_to_file(input,checked_list,lookup_done_token,file_length):
     os.system('cp {} {}'.format(input,output))
 
     #Copy input file to output file, simply to have a start
-    copy_command = 'cp {} {}/lookups/{}_original.json'.format(input,output_directory,file_name)
+    copy_command = 'cp {} {}/lookups/{}_lookup_original.json'.format(input,output_directory,file_name)
     os.system(copy_command)
 
     #Open file
@@ -211,7 +211,7 @@ def analyse_data(input,workers):
 
     end = time.time() #End keeping track of time
 
-    time_difference = end - start
+    time_difference = math.ceil(end - start)
     print('\nPossible errors in lookup may have occured. Use the report mode to analyse those.')
     print("Lookup is done, it took: {} seconds".format(time_difference)) #Give back the result
 
