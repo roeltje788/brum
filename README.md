@@ -139,7 +139,7 @@ Having all dependecies for Brum (see section dependencies) and a python3 interpe
 
 ## File size limitations
 
-Currently Brum has no limitations on the maximum size of an input file.
+Currently Brum uses an integer internally to loop through the lines. Save would be to stay below  2,000,000,000 lines in an input file.
 Keep in mind that having a very small filesize can give a very skewed result, have a larger file size (>1000) will give a more balanced result.
 
 
