@@ -137,6 +137,11 @@ Every output file of Brum will be of type .json.
 Brum is both created and tested on a Ubuntu 18.04 system. 
 Having all dependecies for Brum (see section dependencies) and a python3 interperter will probably work, but a Linux distrobution will probably give the most stable results.
 
+### Python
+
+The minimum version of python is currently: 3.3
+A lower version will probably give errors.
+
 ## File size limitations
 
 Currently Brum uses an integer internally to loop through the lines. Save would be to stay below  2,000,000,000 lines in an input file.
