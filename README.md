@@ -139,8 +139,8 @@ Having all dependecies for Brum (see section dependencies) and a python3 interpe
 
 ### Python
 
-The minimum version of python is currently: 3.3
-A lower version will probably give errors.
+<p>The minimum version of python is currently: 3.3</p>
+<p>A lower version will probably give errors.</p>
 
 ## File size limitations
 
