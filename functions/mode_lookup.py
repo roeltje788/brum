@@ -8,6 +8,9 @@ import time
 import concurrent.futures
 import queue
 import threading
+import math
+import time
+
 
 def split(seq, num):
     avg = len(seq) / float(num)
@@ -23,28 +26,33 @@ def split(seq, num):
 def lookupip(ip):
 
     try:
-        #    url = 'https://stat.ripe.net/data/routing-status/data.json?resource='+ip
         url = 'https://stat.ripe.net/data/network-info/data.json?resource='+ip
         r = requests.get(url)
         json_response = json.loads(r.content)
-        return json_response['data']['prefix']
+
+        prefix  =   json_response['data']['prefix']
+        asn     =   json_response['data']['asns'][0]
+
+        if (len(prefix) == 0):
+            prefix = 'error'
+        if (len(asn) == 0):
+            asn = 'error'
+
+        result = [prefix,asn]
+        return result
     except:
-        print ('Something went wrong on IP: '+ip)
-        return 'invalid'
+        return ['error','error']
 
 def check_roa(prefix,asn):
 
     try:
-        if (prefix == ""):
-            return 'invalid'
 
         url = 'https://stat.ripe.net/data/rpki-validation/data.json?resource='+asn+'&prefix='+prefix
         r = requests.get(url)
         json_response = json.loads(r.content)
         return json_response['data']['status']
     except:
-        print ('Something went wrong on prefix: '+prefix+' with this asn value: '+asn)
-        return 'invalid'
+        return 'error'
 
 def checkip(checked_list,sub_list_part,dns_servers):
 
@@ -59,21 +67,24 @@ def checkip(checked_list,sub_list_part,dns_servers):
         else:
             ip = dns_servers[i]['ip6_address']
 
-        asn = dns_servers[i]['as']
-        print ('Checking ip: {} for asn: {}'.format(ip,asn))
-        tmp_result = check_roa(lookupip(ip),asn)
-        if(tmp_result == "valid"):
-            protected+=1
+        tmp_result  = lookupip(ip)
 
-    checked_list.put(protected)
+        dns_servers[i]['prefix']  = tmp_result[0]
+        dns_servers[i]['asn']     = tmp_result[1]
 
-def create_workers(sub_list_part,dns_servers):
+        dns_servers[i]['valid_roa']  = check_roa(tmp_result[0],tmp_result[1])
+
+        final_result = [i,dns_servers[i]]
+
+        checked_list.put(final_result)
+
+def create_workers(checked_list,sub_list_parts,dns_servers):
 
     threads = []
 
     #Create threads that lookup an IP at RIPE
     for sub_list_part in sub_list_parts:
-        new_thread = threading.Thread(target=checkip,args=(roa_protected,sub_list_part,dns_servers))
+        new_thread = threading.Thread(target=checkip,args=(checked_list,sub_list_part,dns_servers))
         new_thread.start()
         threads.append(new_thread)
 
@@ -87,7 +98,73 @@ def get_servers_from_file(input):
 
         dns_servers = json.load(json_input)
 
-    return dns_servers[0]
+    return dns_servers
+
+def progress(ticker,percent=0, width=40):
+    left = width * percent // 100
+    right = width - left
+    print('\r{}['.format(ticker), '#' * left, ' ' * right, ']',
+          f' {percent:.0f}%',
+          sep='', end='', flush=True)
+
+def update_ticker(ticker):
+
+    if (ticker == '|'):
+        return '-'
+    else:
+        return '|'
+
+def write_to_file(input, output,checked_list,lookup_done_token,file_length):
+
+    threads_done        = False #   Are the worker threads done?
+    progression_counter = 0     #   This variable is used to give feedback on the progression to the user
+    output_file         = ''    #   Variable to add the lookups to
+    ticker              = '-'   #   Speed indicator
+
+    #Copy input file to output file, simply to have a start
+    copy_command = 'cp {} {}'.format(input,output)
+    os.system(copy_command)
+
+    #Open file
+    with open(output) as json_output:
+        output_file = json.load(json_output)
+
+    #Write progression to file and update CLI counter
+    while (threads_done == False):
+
+        ticker = update_ticker(ticker) #Update ticker for speed indication
+
+        changes = False #Only write to disk when there are changes
+
+        #Alter file based on lookups
+        while not checked_list.empty():
+            changes = True
+            tmp_result = checked_list.get()
+            i = tmp_result[0]
+            json_result = tmp_result[1]
+            output_file[i] = json_result
+            progression_counter +=1
+
+        progression_percentage = math.floor((progression_counter/file_length)*100)
+        progress(ticker,progression_percentage)
+
+        #Check if workers threads are done
+        if not lookup_done_token.empty():
+            threads_done = lookup_done_token.get()
+
+    # All threads are done, now loop through it until all are done
+    while not checked_list.empty():
+        tmp_result = checked_list.get()
+        i = tmp_result[0]
+        json_result = tmp_result[0]
+        output_file[i] = json_result
+
+    #Write to the output file
+    with open(output,'w') as new_file:
+        json.dump(output_file,new_file)
+
+    progress(u'\u2713',100)
+
 
 def wait_for_threads(threads):
 
@@ -96,26 +173,29 @@ def wait_for_threads(threads):
 
 def analyse_data(input,output,workers):
 
-    workers = 0 #TODO: load workers from json file
-
     dns_servers = get_servers_from_file(input) #Get servers
     file_length = len(dns_servers)
     print ('The file contains {} rows'.format(file_length))
 
-    start = time.time() #Start keeping check of the time
+    start = time.time() #Start keeping track of the time
 
-    checked_list = queue.Queue() # items in this list have been checked and will be written to the disk
+    checked_list        = queue.Queue() # items in this list have been checked and will be written to the disk
+    lookup_done_token   = queue.Queue() # this queue will be use to signal the file writer when all other workers are done
 
     sub_list_parts = list(split(range(file_length), workers)) #Create sublists for workers to analyse
 
-    threads = create_workers(sub_list_part,dns_servers) #Create threads that lookup an IP at RIPE
+    threads = create_workers(checked_list,sub_list_parts,dns_servers) #Create threads that lookup an IP at RIPE
 
-    #TODO: CREATE THREAD THAT WRITES TO DISK
+    file_writer_thread = threading.Thread(target=write_to_file,args=(input,output,checked_list,lookup_done_token,file_length))
+    file_writer_thread.start()
 
-    wait_for_threads(threads) #Wait for threads to join back
+    wait_for_threads(threads) #Wait for worker threads to join back in
+
+    lookup_done_token.put(True)
+    file_writer_thread.join()
 
     end = time.time() #End keeping track of time
 
     time_difference = end - start
-    print("Lookup is done, it took:{} seconds",format(time_difference)) #Give back the result
+    print("\nLookup is done, it took: {} seconds".format(time_difference)) #Give back the result
 

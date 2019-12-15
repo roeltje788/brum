@@ -1,4 +1,4 @@
-Company Name,ns_address,ipv4_address,ip6_address
+Company Name,ns_address,ip4_address,ip6_address
 Adguard,dns.adguard.com,176.103.130.130,NULL
 Adguard,dns.adguard.com,176.103.130.131,NULL
 Adguard,dns.adguard.com,NULL,2a00:5a60::ad1:0ff
