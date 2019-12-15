@@ -110,7 +110,7 @@ They are simple text requests, but can add up if the supplied file is large in s
 <br />
 Source: https://stat.ripe.net/docs/data_api/
 
-## Supported input types
+## Supported input filetypes
 
 ### JSON
 
@@ -127,3 +127,14 @@ csvtojson <csvfilepath> > <outputfile>
 <csvfilepath> is the current location of the csv file.
 <br />
 <outputfile> the location where the output .json file should be stored (with a .json extension) 
+
+## Supported output filetypes
+
+Every output file of Brum will be of type .json. 
+
+## Supported operating system
+
+Brum is both created and tested on a Ubuntu 18.04 system. 
+Having all dependecies for Brum (see section dependencies) and a python3 interperter will probably work, but a Linux distrobution will probably give the most stable results.
+
+
