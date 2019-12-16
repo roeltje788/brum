@@ -232,18 +232,6 @@ def sort_by(json_file,sort_value):
 
     return values
 
-def sort_by_asn(json_file):
-
-    return sort_by(json_file,'asn')
-
-def sort_by_prefix(json_file):
-
-    return sort_by(json_file,'prefix')
-
-def sort_by_roa(json_file):
-
-    return sort_by(json_file,'valid_roa')
-
 def ordered_list_analysis(ordered_list):
 
     complete_protected      =   0
@@ -306,9 +294,9 @@ def generate_report(input):
 
         # Generate some files ordered differently
 
-        asn_ordered                     =   sort_by_asn(json_file)
-        prefix_ordered                  =   sort_by_prefix(json_file)
-        roa_ordered                     =   sort_by_roa(json_file)
+        asn_ordered                     =   sort_by(json_file,'asn')
+        prefix_ordered                  =   sort_by(json_file,'prefix')
+        roa_ordered                     =   sort_by(json_file,'valid_roa')
 
         # Fill object with results
 
