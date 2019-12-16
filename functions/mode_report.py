@@ -18,9 +18,6 @@ from collections import Counter
 
     Basic report (arguments:ns_address,ip4_address,ip6_address,asn,prefix):
 
-    - Give overall valid roa
-    - Give overall valid roa ipv4 vs ipv6
-
     Additional argument(s):tot:
 
     (ignore those without a domain name!!)
@@ -32,14 +29,7 @@ from collections import Counter
 
     -Difference per country?
 
-    OUTPUT:
-    - Generate file with all errors
-    - Generate an original file
-    - Generate folder for all output
-    - Generate file with the above result in .json
-    - Generate file from the .json file with the results in human readable version
 '''
-
 # General
 
 def write_json_file(json_data,location):
@@ -55,13 +45,72 @@ def create_percentage (total,part):
     percentage = (round((part/total)*100,2))
     return percentage
 
+##CLASSES####
+
+class roa_analyser:
+    def __init__(self,valid_roas,valid_ip4_roas,valid_ip6_roas,file_length):
+
+        self.json_results                      =   {}
+
+        self.json_results['valid_roas']        =   valid_roas
+        self.json_results['valid_roas_p']      =   create_percentage(file_length,valid_roas)
+        self.json_results['valid_ip4_roas']    =   valid_ip4_roas
+        self.json_results['valid_ip4_roas_p']  =   create_percentage(valid_roas,valid_ip4_roas)
+        self.json_results['valid_ip6_roas']    =   valid_ip6_roas
+        self.json_results['valid_ip6_roas_p']  =   create_percentage(valid_roas,valid_ip6_roas)
+
+    def json_object(self):
+
+        return self.json_results
+
+class error_analyser:
+    def __init__(self,error_count,error_ip4_count,error_ip6_count,error_ip_lookup,error_roa_lookup,errors,file_length):
+
+        self.json_results                           =   {}
+
+        self.json_results['error_count']            =   error_count
+        self.json_results['error_count_p']          =   create_percentage(file_length,error_count)
+        self.json_results['error_ip4_count']        =   error_ip4_count
+        self.json_results['error_ip4_count_p']      =   create_percentage(error_count,error_ip4_count)
+        self.json_results['error_ip6_count']        =   error_ip6_count
+        self.json_results['error_ip6_count_p']      =   create_percentage(error_count,error_ip6_count)
+        self.json_results['error_ip_lookup']        =   error_ip_lookup
+        self.json_results['error_ip_lookup_p']      =   create_percentage(error_count,error_ip_lookup)
+        self.json_results['error_roa_lookup']       =   error_roa_lookup
+        self.json_results['error_roa_lookup_p']     =   create_percentage(error_count,error_roa_lookup)
+
+        self.errors                                 =   errors
+
+    def json_object(self):
+
+        return self.json_results
+
+    def json_errors(self):
+
+        return self.errors
+
+class ordered_list_analyser:
+    def __init__(self,unique_count,complete_protected,partial_protected,file_length):
+
+        self.json_results                               =   {}
+
+        self.json_results['unique_count']               =   file_length
+        self.json_results['complete_protected']         =   complete_protected
+        self.json_results['complete_protected_p']       =   create_percentage(file_length,complete_protected)
+        self.json_results['partial_protected']          =   partial_protected
+        self.json_results['partial_protected_p']        =   create_percentage(file_length,partial_protected)
+        self.json_results['unprotected']                =   file_length - self.json_results['complete_protected'] - self.json_results['partial_protected']
+        self.json_results['unprotected_p']              =   round(100 - self.json_results['complete_protected_p'] - self.json_results['partial_protected_p'],2)
+
+    def json_object(self):
+
+        return self.json_results
+
 # Check if a test can run
 
 def check_argument(input,argument):
 
-    first_line = input[0]
-
-    if (argument in first_line):
+    if (argument in input[0]):
         return True
     else:
         return False
@@ -99,157 +148,74 @@ def validate_for_country_argument(json_file):
 # ALL TESTS
 
 # Basic tests
-def valid_roas_in_list(json_file):
+def roa_checker(json_file,file_length):
 
-    protected = 0
+    protected_complete  =   0
+    protected_ip4       =   0
+    protected_ip6       =   0
 
-    json_file_max = len(json_file) - 1 # -1 for the upcoming counter
+    for single_row in json_file:
+        if (single_row['valid_roa'] == 'valid'):
+            protected_complete+=1
+            if (single_row['ip6_address'] == 'NULL' ):
+                protected_ip4+=1
+            if (single_row['ip4_address'] == 'NULL' ):
+                protected_ip6+=1
 
-    for i in range(0, json_file_max):
-        if (json_file[i]['valid_roa'] == 'valid'):
-            protected+=1
+    return roa_analyser(protected_complete,protected_ip4,protected_ip6,file_length)
 
-    return protected
+def error_checker(json_file,file_length):
 
-def valid_ip4_roas_in_list(json_file):
+    errors_complete     =   0
+    errors_ip4          =   0
+    errors_ip6          =   0
+    errors_ip_lookup    =   0
+    errors_roa_lookup   =   0
+    errors              =   []
 
-    protected = 0
+    for single_row in json_file:
 
-    json_file_max = len(json_file) - 1 # -1 for the upcoming counter
+        error_complete      =   False
+        error_ip4           =   False
+        error_ip6           =   False
+        error_ip_lookup     =   False
+        error_roa_lookup    =   False
 
-    for i in range(0, json_file_max):
-        if (json_file[i]['valid_roa'] == 'valid' and json_file[i]['ip6_address'] == 'NULL' ):
-            protected+=1
+        if (single_row['prefix'] == 'error'):
+            error_complete = True
+            error_ip_lookup = True
+            if (single_row['ip6_address'] == 'NULL'):
+                error_ip4 = True
+            if (single_row['ip4_address'] == 'NULL'):
+                error_ip6 = True
+        if (single_row['asn'] == 'error'):
+            error_complete = True
+            error_ip_lookup = True
+            if (single_row['ip6_address'] == 'NULL'):
+                error_ip4 = True
+            if (single_row['ip4_address'] == 'NULL'):
+                error_ip6 = True
+        if (single_row['valid_roa'] == 'error'):
+            error_complete = True
+            error_roa_lookup = True
+            if (single_row['ip6_address'] == 'NULL'):
+                error_ip4 = True
+            if (single_row['ip4_address'] == 'NULL'):
+                error_ip6 = True
 
-    return protected
+        if (error_complete == True):
+            errors_complete += 1
+            errors.append(single_row)
+        if (error_ip4 == True):
+            errors_ip4 += 1
+        if (error_ip6 == True):
+            errors_ip6 += 1
+        if (error_ip_lookup):
+            errors_ip_lookup +=1
+        if (error_roa_lookup):
+            errors_roa_lookup +=1
 
-def valid_ip6_roas_in_list(json_file):
-
-    protected = 0
-
-    json_file_max = len(json_file) - 1 # -1 for the upcoming counter
-
-    for i in range(0, json_file_max):
-        if (json_file[i]['valid_roa'] == 'valid' and json_file[i]['ip4_address'] == 'NULL'):
-            protected+=1
-
-    return protected
-
-
-
-def number_of_errors(json_file):
-
-    errors = 0
-
-    json_file_max = len(json_file) - 1 # -1 for the upcoming counter
-
-    for i in range(0, json_file_max):
-        error = False
-        if (json_file[i]['prefix'] == 'error'):
-            error = True
-        if (json_file[i]['asn'] == 'error'):
-            error = True
-        if (json_file[i]['valid_roa'] == 'error'):
-            error = True
-
-        if (error == True):
-            errors += 1
-
-    return errors
-
-def number_of_ip4_errors(json_file):
-
-    errors = 0
-
-    json_file_max = len(json_file) - 1 # -1 for the upcoming counter
-
-    for i in range(0, json_file_max):
-        error = False
-        if (json_file[i]['prefix'] == 'error' and json_file[i]['ip6_address'] == 'NULL'):
-            error = True
-        if (json_file[i]['asn'] == 'error' and json_file[i]['ip6_address'] == 'NULL'):
-            error = True
-        if (json_file[i]['valid_roa'] == 'error' and json_file[i]['ip6_address'] == 'NULL'):
-            error = True
-
-        if (error == True):
-            errors += 1
-
-    return errors
-
-def number_of_ip6_errors(json_file):
-
-    errors = 0
-
-    json_file_max = len(json_file) - 1 # -1 for the upcoming counter
-
-    for i in range(0, json_file_max):
-        error = False
-        if (json_file[i]['prefix'] == 'error' and json_file[i]['ip4_address'] == 'NULL'):
-            error = True
-        if (json_file[i]['asn'] == 'error' and json_file[i]['ip4_address'] == 'NULL'):
-            error = True
-        if (json_file[i]['valid_roa'] == 'error' and json_file[i]['ip4_address'] == 'NULL'):
-            error = True
-
-        if (error == True):
-            errors += 1
-
-    return errors
-
-def errors_ip_lookup(json_file):
-
-    errors = 0
-
-    json_file_max = len(json_file) - 1 # -1 for the upcoming counter
-
-    for i in range(0, json_file_max):
-        error = False
-        if (json_file[i]['prefix'] == 'error'):
-            error = True
-        if (json_file[i]['asn'] == 'error'):
-            error = True
-
-        if (error == True):
-            errors += 1
-
-    return errors
-
-
-def errors_roa_lookup(json_file):
-
-    errors = 0
-
-    json_file_max = len(json_file) - 1 # -1 for the upcoming counter
-
-    for i in range(0, json_file_max):
-        if (json_file[i]['valid_roa'] == 'error'):
-            errors += 1
-
-    return errors
-
-
-def get_all_errors(json_file):
-
-    errors = {}
-
-    json_file_max = len(json_file) - 1 # -1 for the upcoming counter
-
-    for i in range(0, json_file_max):
-        error = False
-        if (json_file[i]['prefix'] == 'error'):
-            error = True
-        if (json_file[i]['asn'] == 'error'):
-            error = True
-        if (json_file[i]['valid_roa'] == 'error'):
-            error = True
-
-        if (error == True):
-            error_location = str(i)
-
-            errors[error_location] = json_file[i]
-
-    return errors
+    return error_analyser(errors_complete,errors_ip4,errors_ip6,errors_ip_lookup,errors_roa_lookup,errors,file_length)
 
 def sort_by(json_file,sort_value):
 
@@ -278,68 +244,32 @@ def sort_by_roa(json_file):
 
     return sort_by(json_file,'valid_roa')
 
-def complete_protected_asn_count(asn_ordered):
+def ordered_list_analysis(ordered_list):
 
-    protected_asn = 0
+    complete_protected      =   0
+    partial_protected       =   0
 
-    for asn_value in asn_ordered:
-        complete_protected = False
-        for single_row in asn_ordered[asn_value]:
-            if (single_row['valid_roa'] == 'valid'):
-                complete_protected = True
-        if (complete_protected == True):
-            protected_asn+=1
+    file_length = len(ordered_list)
 
-    return protected_asn
-
-def partial_protected_asn_count(asn_ordered):
-
-    partial_protected_asn = 0
-
-    for asn_value in asn_ordered:
-        protected   = False
-        unprotected = False
-        for single_row in asn_ordered[asn_value]:
-            if (single_row['valid_roa'] == 'valid'):
-                protected = True
+    for ordered_item in ordered_list:
+        single_complete_protected  =   True
+        single_partial_protected   =   False
+        single_partial_unprotected =   False
+        for single_row in ordered_list[ordered_item]:
+            # Complete protection checker
             if (single_row['valid_roa'] != 'valid'):
-                unprotected = True
-        if (protected == True and unprotected == True):
-            partial_protected_asn+=1
-
-    return partial_protected_asn
-
-
-def complete_protected_prefix_count(prefix_ordered):
-
-    protected_prefix = 0
-
-    for prefix_value in prefix_ordered:
-        complete_protected = False
-        for single_row in prefix_ordered[prefix_value]:
+                single_complete_protected = False # Complete protection checker
+                single_partial_unprotected = True # Partial protection checker
             if (single_row['valid_roa'] == 'valid'):
-                complete_protected = True
-        if (complete_protected == True):
-            protected_prefix+=1
+                single_partial_protected = True # Partial protection checker
 
-    return protected_prefix
+        if (single_complete_protected == True):
+            complete_protected+=1
 
-def partial_protected_prefix_count(prefix_ordered):
+        if (single_partial_protected == True and single_partial_unprotected == True):
+            partial_protected+=1
 
-    partial_protected_prefix = 0
-
-    for prefix_value in prefix_ordered:
-        protected   = False
-        unprotected = False
-        for single_row in prefix_ordered[prefix_value]:
-            if (single_row['valid_roa'] == 'valid'):
-                protected = True
-            if (single_row['valid_roa'] != 'valid'):
-                unprotected = True
-        if (protected == True and unprotected == True):
-            partial_protected_prefix+=1
-
-    return partial_protected_prefix
+    return ordered_list_analyser(file_length,complete_protected,partial_protected,file_length)
 
 # Tests for tot argument
 
@@ -374,60 +304,23 @@ def generate_report(input):
     if (validate_basic_test(json_file) == True): #Basic test
         print(u'\u2713'+" All basic arguments")
 
-        report_dict['basic']            =   {}
-        basic                           =   report_dict['basic']
-
-        basic['row_count']              =   file_length
-
-        basic['roa_validity']           =   {}
-        roa_validity                    =   basic['roa_validity']
-
-        roa_validity['valid_roas']      =   valid_roas_in_list(json_file)
-        roa_validity['valid_roas_p']    =   create_percentage(file_length,roa_validity['valid_roas'])
-        roa_validity['valid_ip4_roas']  =   valid_ip4_roas_in_list(json_file)
-        roa_validity['valid_ip4_roas_p']=   create_percentage(roa_validity['valid_roas'],roa_validity['valid_ip4_roas'])
-        roa_validity['valid_ip6_roas']  =   valid_ip6_roas_in_list(json_file)
-        roa_validity['valid_ip6_roas_p']=   create_percentage(roa_validity['valid_roas'],roa_validity['valid_ip6_roas'])
+        # Generate some files ordered differently
 
         asn_ordered                     =   sort_by_asn(json_file)
         prefix_ordered                  =   sort_by_prefix(json_file)
         roa_ordered                     =   sort_by_roa(json_file)
 
-        basic['asn']                    =   {}
-        asn                             =   basic['asn']
+        # Fill object with results
 
-        asn['unique_asn_count']         =   len(asn_ordered)
-        asn['complete_protected_asn']   =   complete_protected_asn_count(asn_ordered)
-        asn['complete_protected_asn_p'] =   create_percentage(asn['unique_asn_count'],asn['complete_protected_asn'])
-        asn['partial_protected_asn']    =   partial_protected_asn_count(asn_ordered)
-        asn['partial_protected_asn_p']  =   create_percentage(asn['unique_asn_count'],asn['partial_protected_asn'])
-        asn['unprotected_asn']          =   asn['unique_asn_count'] - asn['complete_protected_asn'] - asn['partial_protected_asn']
-        asn['unprotected_asn_p']        =   round(100 - asn['complete_protected_asn_p'] - asn['partial_protected_asn_p'])
+        report_dict['basic']            =   {}
+        basic                           =   report_dict['basic']
 
-        basic['prefix']                 =   {}
-        prefix                          =   basic['prefix']
-
-        prefix['unique_prefix_count']   =   len(prefix_ordered)
-        prefix['complete_protected_prefix']     =   complete_protected_prefix_count(prefix_ordered)
-        prefix['complete_protected_prefix_p']   =   create_percentage(prefix['unique_prefix_count'],prefix['complete_protected_prefix'])
-        prefix['partial_protected_prefix']      =   partial_protected_prefix_count(prefix_ordered)
-        prefix['partial_protected_prefix_p']    =   create_percentage(prefix['unique_prefix_count'],prefix['partial_protected_prefix'])
-        prefix['unprotected_prefix']    =   prefix['unique_prefix_count'] - prefix['complete_protected_prefix'] - prefix['partial_protected_prefix']
-        prefix['unprotected_prefix_p']  =   round(100 - prefix['complete_protected_prefix_p'] - prefix['partial_protected_prefix_p'])
-
-        basic['errors']                 =   {}
-        errors                          =   basic['errors']
-
-        errors['error_count']           =   number_of_errors(json_file)
-        errors['error_count_p']         =   create_percentage(file_length,errors['error_count'])
-        errors['error_ip4_count']       =   number_of_ip4_errors(json_file)
-        errors['error_ip4_count_p']     =   create_percentage(errors['error_count'],errors['error_ip4_count'])
-        errors['error_ip6_count']       =   number_of_ip6_errors(json_file)
-        errors['error_ip6_count_p']     =   create_percentage(errors['error_count'],errors['error_ip6_count'])
-        errors['error_ip_lookup']       =   errors_ip_lookup(json_file)
-        errors['error_ip_lookup_p']     =   create_percentage(errors['error_count'],errors['error_ip_lookup'])
-        errors['error_roa_lookup']      =   errors_roa_lookup(json_file)
-        errors['error_roa_lookup_p']    =   create_percentage(errors['error_count'],errors['error_roa_lookup'])
+        basic['row_count']              =   file_length
+        basic['roa_validity']           =   roa_checker(json_file,file_length).json_object()
+        basic['asn']                    =   ordered_list_analysis(asn_ordered).json_object()
+        basic['prefix']                 =   ordered_list_analysis(prefix_ordered).json_object()
+        error_results                   =   error_checker(json_file,file_length)
+        basic['errors']                 =   error_results.json_object()
 
     else:
         print (u'\u2717'+' All basic arguments')
@@ -473,7 +366,7 @@ def generate_report(input):
     write_json_file(report_dict,output) # Write results to disk
 
     error_file = '{}/reports/{}_{}_report_errors.json'.format(output_directory,file_name,epoch_time)
-    error_json = get_all_errors(json_file)
+    error_json = error_results.json_errors()
     write_json_file(error_json,error_file) # Write results to disk
 
     asn_location = '{}/reports/{}_{}_report_asn_ordered.json'.format(output_directory,file_name,epoch_time)
