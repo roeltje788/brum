@@ -176,7 +176,7 @@ def write_to_file(input,checked_list,lookup_done_token,file_length):
 
     #Write to the output file
     with open(output,'w') as new_file:
-        json.dump(output_file,new_file)
+        json.dump(output_file,new_file, indent=4)
 
     progress(u'\u2713',100)
 

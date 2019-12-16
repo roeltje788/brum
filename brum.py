@@ -46,6 +46,7 @@ def main(argv):
     program_version = total_arguments[2]
     workers         = total_arguments[3]
 
+    print ("\n")
     print ("Welcome to Brum. A RPKI deployment analysis tool (Version:{})".format(program_version))
     print ("Following functions are supported (-h for help): ", end=' ')
 
