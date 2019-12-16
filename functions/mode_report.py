@@ -363,6 +363,3 @@ def generate_report(input):
     write_json_file(prefix_ordered,prefix_location)
     roa_location = '{}/reports/{}_{}_report_roa_ordered.json'.format(output_directory,file_name,epoch_time)
     write_json_file(roa_ordered,roa_location)
-
-
-
