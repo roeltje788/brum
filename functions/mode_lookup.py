@@ -24,11 +24,24 @@ def split(seq, num):
 
 def lookupip(ip):
 
-    try:
-        url = 'https://stat.ripe.net/data/network-info/data.json?resource='+ip
-        r = requests.get(url)
-        json_response = json.loads(r.content)
+    json_response = ''
 
+    correct_response = False
+
+    # Connect to server and get a response (keep trying until a good response)
+
+    while (correct_response == False):
+        try:
+            url = 'https://stat.ripe.net/data/network-info/data.json?resource='+ip
+            r = requests.get(url, timeout = 5)
+            json_response = json.loads(r.content)
+            correct_response = True
+        except:
+            pass # Try again
+
+    # Use response and put in a usable format
+
+    try:
         prefix  =   json_response['data']['prefix']
         asn     =   json_response['data']['asns'][0]
 
@@ -44,11 +57,24 @@ def lookupip(ip):
 
 def check_roa(prefix,asn):
 
-    try:
 
-        url = 'https://stat.ripe.net/data/rpki-validation/data.json?resource='+asn+'&prefix='+prefix
-        r = requests.get(url)
-        json_response = json.loads(r.content)
+    # Make request (keep trying until a good response)
+
+    json_response = ''
+    correct_response = False
+
+    while (correct_response == False):
+
+        try:
+            url = 'https://stat.ripe.net/data/rpki-validation/data.json?resource='+asn+'&prefix='+prefix
+            r = requests.get(url, timeout = 5)
+            json_response = json.loads(r.content)
+            correct_response = True
+        except:
+            pass # Try again
+
+    # Use response and return data
+    try:
         return json_response['data']['status']
     except:
         return 'error'
@@ -147,12 +173,11 @@ def write_to_file(input,checked_list,lookup_done_token,file_length):
     #Write progression to file and update CLI counter
     while (threads_done == False):
 
-        ticker = update_ticker(ticker) #Update ticker for speed indication
-
         changes = False #Only write to disk when there are changes
 
         #Alter file based on lookups
         while not checked_list.empty():
+            ticker = update_ticker(ticker) #Update ticker for speed indication
             changes = True
             tmp_result = checked_list.get()
             i = tmp_result[0]
@@ -169,6 +194,7 @@ def write_to_file(input,checked_list,lookup_done_token,file_length):
 
     # All threads are done, now loop through it until all are done
     while not checked_list.empty():
+        ticker = update_ticker(ticker) #Update ticker for speed indication
         tmp_result = checked_list.get()
         i = tmp_result[0]
         json_result = tmp_result[1]

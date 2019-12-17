@@ -6,10 +6,6 @@ import time
 import math
 from collections import Counter
 
-
-##CUSTOM####
-
-
 #Questions to answer:
 '''
     LOOK AT IP-ADDRESSES NOT DOMAIN NAME
