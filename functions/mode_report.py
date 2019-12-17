@@ -5,13 +5,10 @@ import os
 import time
 import math
 from collections import Counter
+from itertools import islice
 
 #Questions to answer:
 '''
-    LOOK AT IP-ADDRESSES NOT DOMAIN NAME
-
-    KEEP TIME IN CONSIDERATION, IF PRESENT IT CONTAINS DATA OVER TIME
-
     Basic report (arguments:ns_address,ip4_address,ip6_address,asn,prefix):
 
     Additional argument(s):tot:
@@ -19,7 +16,6 @@ from collections import Counter
     (ignore those without a domain name!!)
 
     - Give tot number of domains protected (only possible if tot exists)
-    - Give top 3 protected and top 3 unprotected domains
 
     Additional argument(s):country:
 
@@ -27,6 +23,10 @@ from collections import Counter
 
 '''
 # General
+
+def take(n, iterable):
+    "Return first n items of the iterable as a list"
+    return list(islice(iterable, n))
 
 def write_json_file(json_data,location):
 
@@ -44,16 +44,28 @@ def create_percentage (total,part):
 ##CLASSES####
 
 class roa_analyser:
-    def __init__(self,valid_roas,valid_ip4_roas,valid_ip6_roas,file_length):
+    def __init__(self,file_length,valid_roas,valid_ip4_roas,valid_ip6_roas,tot,protected_ip4_domains,protected_ip6_domains,country,protected_ip4_netherlands,protected_ip6_netherlands,protected_ip4_netherlands_domains,protected_ip6_netherlands_domains):
 
-        self.json_results                      =   {}
+        self.json_results                           =   {}
 
-        self.json_results['valid_roas']        =   valid_roas
-        self.json_results['valid_roas_p']      =   create_percentage(file_length,valid_roas)
-        self.json_results['valid_ip4_roas']    =   valid_ip4_roas
-        self.json_results['valid_ip4_roas_p']  =   create_percentage(valid_roas,valid_ip4_roas)
-        self.json_results['valid_ip6_roas']    =   valid_ip6_roas
-        self.json_results['valid_ip6_roas_p']  =   create_percentage(valid_roas,valid_ip6_roas)
+        self.json_results['valid_roas']             =   valid_roas
+        self.json_results['valid_roas_p']           =   create_percentage(file_length,valid_roas)
+        self.json_results['valid_ip4_roas']         =   valid_ip4_roas
+        self.json_results['valid_ip4_roas_p']       =   create_percentage(valid_roas,valid_ip4_roas)
+        self.json_results['valid_ip6_roas']         =   valid_ip6_roas
+        self.json_results['valid_ip6_roas_p']       =   create_percentage(valid_roas,valid_ip6_roas)
+        if (tot):
+            self.json_results['protected_domains']      =   protected_ip4_domains + protected_ip6_domains
+            self.json_results['protected_ip4_domains']  =   protected_ip4_domains
+            self.json_results['protected_ip6_domains']  =   protected_ip6_domains
+        if (country):
+            self.json_results['protected_netherlands']      =   protected_ip4_netherlands + protected_ip6_netherlands
+            self.json_results['protected_ip4_netherlands']  =   protected_ip4_netherlands
+            self.json_results['protected_ip6_netherlands']  =   protected_ip6_netherlands
+        if (tot and country):
+            self.json_results['protected_netherlands_domains']      =   protected_ip4_netherlands_domains + protected_ip6_netherlands_domains
+            self.json_results['protected_ip4_netherlands_domains']  =   protected_ip4_netherlands_domains
+            self.json_results['protected_ip6_netherlands_domains']  =   protected_ip6_netherlands_domains
 
     def json_object(self):
 
@@ -86,7 +98,7 @@ class error_analyser:
         return self.errors
 
 class ordered_list_analyser:
-    def __init__(self,unique_count,complete_protected,partial_protected,file_length):
+    def __init__(self,unique_count,complete_protected,partial_protected,file_length,complete_protected_list,partial_protected_list,unprotected_list):
 
         self.json_results                               =   {}
 
@@ -97,6 +109,9 @@ class ordered_list_analyser:
         self.json_results['partial_protected_p']        =   create_percentage(file_length,partial_protected)
         self.json_results['unprotected']                =   file_length - self.json_results['complete_protected'] - self.json_results['partial_protected']
         self.json_results['unprotected_p']              =   round(100 - self.json_results['complete_protected_p'] - self.json_results['partial_protected_p'],2)
+        self.json_results['complete_protected_list']    =   complete_protected_list
+        self.json_results['partial_protected_list']     =   partial_protected_list
+        self.json_results['unprotected_list']           =   unprotected_list
 
     def json_object(self):
 
@@ -133,34 +148,51 @@ def validate_basic_test(input):
     else:
         return False
 
-def validate_for_tot_argument(json_file):
-
-    return check_argument(json_file,'tot')
-
-def validate_for_country_argument(json_file):
-
-    return check_argument(json_file,'country')
-
 # ALL TESTS
 
 # Basic tests
-def roa_checker(json_file,file_length):
+def roa_checker(json_file,tot,country):
 
-    protected_complete  =   0
-    protected_ip4       =   0
-    protected_ip6       =   0
+    protected_complete                  =   0
+    protected_ip4                       =   0
+    protected_ip6                       =   0
+
+    protected_ip4_domains               =   0
+    protected_ip6_domains               =   0
+
+    protected_ip4_netherlands           =   0
+    protected_ip6_netherlands           =   0
+
+    protected_ip4_netherlands_domains   =   0
+    protected_ip6_netherlands_domains   =   0
+
+
+    file_length = len(json_file)
 
     for single_row in json_file:
         if (single_row['valid_roa'] == 'valid'):
             protected_complete+=1
             if (single_row['ip6_address'] == 'NULL' ):
                 protected_ip4+=1
+                if(tot):
+                    protected_ip4_domains += int(single_row['tot'])
+                if(country and single_row['country'] == 'NL'):
+                    protected_ip4_netherlands+=1
+                    if(tot):
+                        protected_ip4_netherlands_domains+= int(single_row['tot'])
             if (single_row['ip4_address'] == 'NULL' ):
                 protected_ip6+=1
+                if(tot):
+                    protected_ip6_domains += int(single_row['tot'])
+                if(country and single_row['country'] == 'NL'):
+                    protected_ip6_netherlands+=1
+                    if(tot):
+                        protected_ip6_netherlands_domains+= int(single_row['tot'])
 
-    return roa_analyser(protected_complete,protected_ip4,protected_ip6,file_length)
 
-def error_checker(json_file,file_length):
+    return roa_analyser(file_length,protected_complete,protected_ip4,protected_ip6,tot,protected_ip4_domains,protected_ip6_domains,country,protected_ip4_netherlands,protected_ip6_netherlands,protected_ip4_netherlands_domains,protected_ip6_netherlands_domains)
+
+def error_checker(json_file):
 
     errors_complete     =   0
     errors_ip4          =   0
@@ -168,6 +200,8 @@ def error_checker(json_file,file_length):
     errors_ip_lookup    =   0
     errors_roa_lookup   =   0
     errors              =   []
+
+    file_length         =   len(json_file)
 
     for single_row in json_file:
 
@@ -228,10 +262,36 @@ def sort_by(json_file,sort_value):
 
     return values
 
-def ordered_list_analysis(ordered_list):
+def get_unique_ip(json_file):
 
-    complete_protected      =   0
-    partial_protected       =   0
+    values = {}
+    ip_list = []
+
+    for single_row in json_file:
+        sorter = ''
+        if (single_row['ip4_address'] == 'NULL'):
+            sorter = single_row['ip6_address']
+        else:
+            sorter = single_row['ip4_address']
+        if ( sorter in values):
+            values[sorter].append(single_row)
+        else:
+            new_list = []
+            new_list.append(single_row)
+            values[sorter] = new_list
+
+    for single_row in values:
+        ip_list.append(values[single_row][0])
+
+    return ip_list
+
+def ordered_list_checker(ordered_list):
+
+    complete_protected      =       0
+    complete_protected_list =       {}
+    partial_protected       =       0
+    partial_protected_list  =       {}
+    unprotected_list        =       {}
 
     file_length = len(ordered_list)
 
@@ -240,7 +300,6 @@ def ordered_list_analysis(ordered_list):
         single_partial_protected   =   False
         single_partial_unprotected =   False
         for single_row in ordered_list[ordered_item]:
-            # Complete protection checker
             if (single_row['valid_roa'] != 'valid'):
                 single_complete_protected = False # Complete protection checker
                 single_partial_unprotected = True # Partial protection checker
@@ -249,17 +308,55 @@ def ordered_list_analysis(ordered_list):
 
         if (single_complete_protected == True):
             complete_protected+=1
+            tmp_length                              = len(ordered_list[ordered_item])
+            complete_protected_list[str(tmp_length)]   = str(ordered_item)
 
-        if (single_partial_protected == True and single_partial_unprotected == True):
+
+        elif (single_partial_protected == True and single_partial_unprotected == True):
             partial_protected+=1
+            tmp_length                              =   len(ordered_list[ordered_item])
+            partial_protected_list[str(tmp_length)] =   str(ordered_item)
+        else:
+            tmp_length                              =   len(ordered_list[ordered_item])
+            unprotected_list[str(tmp_length)]       =   str(ordered_item)
 
-    return ordered_list_analyser(file_length,complete_protected,partial_protected,file_length)
+    complete_tmp_list = complete_protected_list.keys()
+    complete_tmp_list = list(map(int,complete_tmp_list))
+    complete_protected_list = sorted(zip(complete_tmp_list,complete_protected_list.values()),reverse=True)[0:5]
+
+    partial_tmp_list = partial_protected_list.keys()
+    partial_tmp_list = list(map(int,partial_tmp_list))
+    partial_protected_list = sorted(zip(partial_tmp_list,partial_protected_list.values()),reverse=True)[0:5]
+
+    unprotected_tmp_list    = unprotected_list.keys()
+    unprotected_tmp_list    = list(map(int,unprotected_tmp_list))
+    unprotected_list        = sorted(zip(unprotected_tmp_list,unprotected_list.values()),reverse=True)[0:5]
+
+    return ordered_list_analyser(file_length,complete_protected,partial_protected,file_length,complete_protected_list,partial_protected_list,unprotected_list)
+
+def basic_tests(json_file,asn_ordered,prefix_ordered,error_results,tot,country):
+
+    json_results                    =   {}
+
+    file_length                     =   len(json_file)
+
+    json_results['row_count']       =   file_length
+    json_results['roa_validity']    =   roa_checker(json_file,tot,country).json_object()
+    json_results['asn']             =   ordered_list_checker(asn_ordered).json_object()
+    json_results['prefix']          =   ordered_list_checker(prefix_ordered).json_object()
+    json_results['errors']          =   error_results.json_object()
+
+    return json_results
 
 # Tests for tot argument
 
+def tot_tests(json_file):
+    return 0
 
 # Tests for country argument
 
+def country_tests(json_file):
+    return 0
 
 # File management
 
@@ -273,74 +370,23 @@ def get_json_file(input):
 
     return input_file
 
-# Main program
+def write_results_to_disk(input,report_dict,error_results,asn_ordered,prefix_ordered,roa_ordered,ip_ordered):
 
-def generate_report(input):
-
-    report_dict = {} #This report will contain all results generated below and will later be written to the disk
-
-    json_file = get_json_file(input) #Get the file to make the report for
-    file_length = len(json_file)
-
-    print ('Test analyses on the first line in the input file. All lines should have the same arguments!')
-
-    #Check test (exit if basic test cannot run)
-    if (validate_basic_test(json_file) == True): #Basic test
-        print(u'\u2713'+" All basic arguments")
-
-        # Generate some files ordered differently
-
-        asn_ordered                     =   sort_by(json_file,'asn')
-        prefix_ordered                  =   sort_by(json_file,'prefix')
-        roa_ordered                     =   sort_by(json_file,'valid_roa')
-
-        # Fill object with results
-
-        report_dict['basic']            =   {}
-        basic                           =   report_dict['basic']
-
-        basic['row_count']              =   file_length
-        basic['roa_validity']           =   roa_checker(json_file,file_length).json_object()
-        basic['asn']                    =   ordered_list_analysis(asn_ordered).json_object()
-        basic['prefix']                 =   ordered_list_analysis(prefix_ordered).json_object()
-        error_results                   =   error_checker(json_file,file_length)
-        basic['errors']                 =   error_results.json_object()
-
-    else:
-        print (u'\u2717'+' All basic arguments')
-        sys.exit(1)
-
-    #Tot argument (validation + tests)
-
-    if (validate_for_tot_argument(json_file) == True):
-        print (u'\u2713'+" Tot argument")
-        pass # Run tests
-    else:
-        print (u'\u2717'+" Tot argument")
-
-    #Country argument (validation + tests)
-
-    if (validate_for_country_argument(json_file) == True):
-        print (u'\u2713'+" Country argument")
-        pass #Run tests
-    else:
-        print (u'\u2717'+" Country argument")
-
-    #Generate output files and write to disk
+    # Generate folders and output file names
 
     base_dir        = os.path.dirname(input)
     file            = os.path.splitext(os.path.basename(input))
     file_name       = file[0]
     file_extension  = file[1]
 
+    epoch_time = int(time.time())
+
     output_directory = '{}/{}'.format(base_dir,file_name)
 
     os.system('mkdir -p {}'.format(output_directory))
     os.system('mkdir -p {}/reports/'.format(output_directory))
 
-    os.system('cp {} {}/reports/{}_report_original.json'.format(input,output_directory,file_name)) #Create a copy of the original file
-
-    epoch_time = int(time.time())
+    os.system('cp {} {}/reports/{}_report_original.json'.format(input,output_directory,file_name)) #Create a copy of $
 
     output = '{}/reports/{}_{}_report_results.json'.format(output_directory,file_name,epoch_time)
     os.system('cp {} {}'.format(input,output))
@@ -359,3 +405,65 @@ def generate_report(input):
     write_json_file(prefix_ordered,prefix_location)
     roa_location = '{}/reports/{}_{}_report_roa_ordered.json'.format(output_directory,file_name,epoch_time)
     write_json_file(roa_ordered,roa_location)
+    ip_location = '{}/reports/{}_{}_report_ip_ordered.json'.format(output_directory,file_name,epoch_time)
+    write_json_file(ip_ordered,ip_location)
+
+# Main program
+
+def generate_report(input):
+
+    report_dict = {} #This report will contain all results generated below and will later be written to the disk
+
+    json_file = get_json_file(input) #Get the file to make the report for
+    file_length = len(json_file)
+
+    print ('Test analyses on the first line in the input file. All lines should have the same arguments!')
+
+    #Check test (exit if basic test cannot run)
+    if (validate_basic_test(json_file)): #Basic test
+        print(u'\u2713'+" All basic tests")
+
+        # Generate some files ordered differently
+
+        # Sort for domains
+
+        asn_ordered                     =   sort_by(json_file,'asn')
+        prefix_ordered                  =   sort_by(json_file,'prefix')
+        roa_ordered                     =   sort_by(json_file,'valid_roa')
+
+        # Sort for unique IP's
+
+        unique_ip_list                  =   get_unique_ip(json_file)
+
+        unique_asn_ordered              =   sort_by(unique_ip_list,'asn')
+        unique_prefix_ordered           =   sort_by(unique_ip_list,'prefix')
+        unique_roa_ordered              =   sort_by(unique_ip_list,'valid_roa')
+
+        # Run basic tests
+
+        tot = False
+
+        if (check_argument(json_file, 'tot')): # TOT
+            print (u'\u2713'+" Tot tests")
+            tot = True
+
+        country = False
+
+        if (check_argument(json_file, 'country')): # COUNTRY
+            print (u'\u2713'+" Country tests")
+            country = True
+
+
+        error_results                   =   error_checker(json_file)
+        report_dict['domain']           =   basic_tests(json_file,asn_ordered,prefix_ordered,error_results,tot,country)
+        unique_error_results            =   error_checker(unique_ip_list)
+        report_dict['ip']               =   basic_tests(json_file,unique_asn_ordered,unique_prefix_ordered,unique_error_results,False,False)
+        report_dict['tot']              =   tot_tests(json_file)
+        report_dict['country']          =   country_tests(json_file)
+
+    else:
+        print (u'\u2717'+' All basic arguments')
+
+    #Generate output files and write to disk
+
+    write_results_to_disk(input,report_dict,error_results,asn_ordered,prefix_ordered,roa_ordered,unique_ip_list)
