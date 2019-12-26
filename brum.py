@@ -24,6 +24,7 @@ def get_arguments(argv):
         program_supported   = file['supported']
         program_version     = file['version']
         workers             = file['workers']
+        lineset             = file['lineset']
 
     for p in program_supported:
         supported_list.append(p)
@@ -34,7 +35,7 @@ def get_arguments(argv):
     parser.add_argument("-o", "--output",help="Output file used by one of the modes")
     args = parser.parse_args()
 
-    total_args = [args,supported_list,program_version,workers]
+    total_args = [args,supported_list,program_version,workers,lineset]
 
     return total_args
 
@@ -46,6 +47,7 @@ def main(argv):
     supported_list  = total_arguments[1]
     program_version = total_arguments[2]
     workers         = total_arguments[3]
+    lineset         = total_arguments[4]
 
     print ("\n")
     print ("Welcome to Brum. A RPKI deployment analysis tool (Version:{})".format(program_version))
@@ -60,7 +62,7 @@ def main(argv):
     #Set and run mode
 
     if (option == 'lookup'):
-        analyse_data(arguments.input,workers)
+        analyse_data(arguments.input,workers,lineset)
     elif (option == 'report'):
         generate_report(arguments.input)
     elif (option == 'getroothints'):
@@ -70,7 +72,7 @@ def main(argv):
     elif (option == 'batchreport'):
         batch_report(arguments.input)
     elif (option == 'batchlookup'):
-        batch_lookup(arguments.input,workers)
+        batch_lookup(arguments.input,workers,lineset)
     else:
         print ('That mode is not (yet) supported.')
 

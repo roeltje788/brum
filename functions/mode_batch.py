@@ -13,7 +13,7 @@ def batch_report(file):
             print ('\n Currently handling file: {}\n'.format(single_file))
             generate_report(single_file)
 
-def batch_lookup(file,workers):
+def batch_lookup(file,workers,lineset):
 
     with open(file) as batch:
 
@@ -23,5 +23,5 @@ def batch_lookup(file,workers):
             single_file = line.splitlines()[0]
 
             print ('\n Currently handling file: {}\n'.format(single_file))
-            analyse_data(single_file,workers)
+            analyse_data(single_file,workers,lineset)
 

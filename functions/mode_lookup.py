@@ -10,6 +10,12 @@ import queue
 import threading
 import math
 import time
+import csv
+
+class lookup_obj:
+    def __init__(self,line_obj,linenumber):
+        self.line_obj = line_obj
+        self.linenumber = linenumber
 
 def split(seq, num):
     avg = len(seq) / float(num)
@@ -114,15 +120,21 @@ def create_workers(checked_list,sub_list_parts,dns_servers):
 
     return threads
 
-def get_servers_from_file(input):
+def get_lines_from_file(input,start,end):
 
-    dns_servers = ''
+    # This function makes sure that not the entire file is read into memory, be careful when changing this function!
+    # This file is "dumb", read_from_file will handle if start and end are possible values
 
-    with open(input) as json_input:
+    lines = []
 
-        dns_servers = json.load(json_input)
+    with open(input) as csv_input:
+        all_lines = csv.DictReader(csv_input)
+        for i in range(start,end):
+            tmp_obj     =   all_lines[i]
+            tmp_lookup  =   lookup_obj(tmp_obj,i)
+            lines.append(tmp_lookup)
 
-    return dns_servers
+    return lines
 
 def progress(ticker,percent=0, width=40):
     left = width * percent // 100
@@ -138,12 +150,41 @@ def update_ticker(ticker):
     else:
         return '|'
 
+def read_from_file(input,read_list,dicsize,workers,filesize):
+
+    # This function will read rows efficiently into memory and exit when no more lines are present
+
+    file_end = False # Are we at the end of the file
+
+    currentline = 0
+
+    while (!file_end):
+
+        time.sleep(1) # Prevent race against the clock, pauze for a second
+
+        end = 0
+
+        if (currentline >= filesize): # Is this the last set?
+
+            end = filesize
+            file_end = True
+
+        else:
+
+            end = currentline + dicsize
+
+        new_dict = get_lines_from_file(input,currentline,end)
+
+        read_list.put(new_dict)
+
+        currentline = end
+
 def write_to_file(input,checked_list,lookup_done_token,file_length):
 
-    threads_done        = False #   Are the worker threads done?
-    progression_counter = 0     #   This variable is used to give feedback on the progression to the user
-    output_file         = ''    #   Variable to add the lookups to
-    ticker              = '-'   #   Speed indicator
+    threads_done        = False             #   Are the worker threads done?
+    progression_counter = 0                 #   This variable is used to give feedback on the progression to the user
+    output_file         = ''                #   Variable to add the lookups to
+    ticker              = '-'               #   Speed indicator
 
     #Split input
     base_dir        = os.path.dirname(input)
@@ -211,28 +252,42 @@ def wait_for_threads(threads):
     for t in threads:
         t.join()
 
-def analyse_data(input,workers):
+def analyse_data(input,workers,dicsize):
 
-    dns_servers = get_servers_from_file(input) #Get servers
-    file_length = len(dns_servers)
-    print ('The file contains {} rows'.format(file_length))
+    # Initialisation
+
+    with open(input) as tmp:
+        filesize = sum(1 for _ in tmp)
+
+    filesize -= filesize #correcting for first line, this line gives the names of the columns
+
+    print ('The file contains {} lines'.format(filesize))
 
     start = time.time() #Start keeping track of the time
 
-    checked_list        = queue.Queue() # items in this list have been checked and will be written to the disk
-    lookup_done_token   = queue.Queue() # this queue will be use to signal the file writer when all other workers are done
+    read_list           = queue.Queue() # Items that have been read from the file that needs to be checked
+    checked_list        = queue.Queue() # Items in this list have been checked and will be written to the disk
+    lookup_done_token   = queue.Queue() # This queue will be use to signal the file writer when all other workers are done
 
-    sub_list_parts = list(split(range(file_length), workers)) #Create sublists for workers to analyse
+    # Start threads
 
-    threads = create_workers(checked_list,sub_list_parts,dns_servers) #Create threads that lookup an IP at RIPE
+    file_reader_thread = threading.Thread(target=read_from_file,args=(input,read_list,dicsize,workers,filesize)) # This thread will read the data from the file in memory
 
-    file_writer_thread = threading.Thread(target=write_to_file,args=(input,checked_list,lookup_done_token,file_length))
+    threads = create_workers(read_list,checked_list) #Create threads that lookup an IP at RIPE
+
+    file_writer_thread = threading.Thread(target=write_to_file,args=(input,checked_list,lookup_done_token,filesize)) # This thread will write the results to the disk
     file_writer_thread.start()
+
+    # Wait until threads finish
 
     wait_for_threads(threads) #Wait for worker threads to join back in
 
-    lookup_done_token.put(True)
+    lookup_done_token.put(True) # All worker threads are done, let the writer thread finish and return
     file_writer_thread.join()
+
+    file_reader_thread.join() # Sanity check, normally this thread will finish way before
+
+    # Finish this lookup properly
 
     end = time.time() #End keeping track of time
 
