@@ -5,9 +5,10 @@ import argparse
 # CUSTOM
 
 # folder:functions
-from functions.mode_lookup import *
-from functions.mode_report import *
+from functions.mode_lookup  import *
+from functions.mode_report  import *
 from functions.mode_getzone import *
+from functions.mode_batch   import *
 
 def get_arguments(argv):
 
@@ -66,6 +67,10 @@ def main(argv):
         get_root_hints(arguments.output)
     elif (option == 'getrootzone'):
         get_root_zone(arguments.output)
+    elif (option == 'batchreport'):
+        batch_report(arguments.input)
+    elif (option == 'batchlookup'):
+        batch_lookup(arguments.input,workers)
     else:
         print ('That mode is not (yet) supported.')
 
