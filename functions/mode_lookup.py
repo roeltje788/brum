@@ -57,7 +57,6 @@ def lookupip(ip):
 
 def check_roa(prefix,asn):
 
-
     # Make request (keep trying until a good response)
 
     json_response = ''
