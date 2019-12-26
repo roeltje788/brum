@@ -12,21 +12,15 @@ import math
 import time
 import csv
 
+class lookup_result:
+    def __init__(self,prefix,asn):
+        self.prefix = prefix
+        self.asn = asn
+
 class lookup_obj:
     def __init__(self,line_obj,linenumber):
         self.line_obj = line_obj
         self.linenumber = linenumber
-
-def split(seq, num):
-    avg = len(seq) / float(num)
-    out = []
-    last = 0.0
-
-    while last < len(seq):
-        out.append(seq[int(last):int(last + avg)])
-        last += avg
-
-    return out
 
 def lookupip(ip):
 
@@ -56,10 +50,9 @@ def lookupip(ip):
         if (len(asn) == 0):
             asn = 'error'
 
-        result = [prefix,asn]
-        return result
+        return lookup_result(prefix,asn)
     except:
-        return ['error','error']
+        return lookup_result('error','error')
 
 def check_roa(prefix,asn):
 
@@ -84,29 +77,25 @@ def check_roa(prefix,asn):
     except:
         return 'error'
 
-def checkip(checked_list,sub_list_part,dns_servers):
+def checkip(input_list,output_list):
 
-    protected = 0
-
-    for i in sub_list_part:
+    for single_input_dic in input_list:
 
         ip = ''
 
-        if (dns_servers[i]['ip6_address'] == 'NULL'):
-            ip = dns_servers[i]['ip4_address']
+        if (single_input['ip6_address'] == 'NULL'):
+            ip = single_input_dic['ip4_address']
         else:
-            ip = dns_servers[i]['ip6_address']
+            ip = single_input_dic['ip6_address']
 
         tmp_result  = lookupip(ip)
 
-        dns_servers[i]['prefix']  = tmp_result[0]
-        dns_servers[i]['asn']     = tmp_result[1]
+        single_input_dic.line_obj['prefix']  = tmp_result.prefix
+        single_input_dic.line_obj['asn']     = tmp_result.asn
 
-        dns_servers[i]['valid_roa']  = check_roa(tmp_result[0],tmp_result[1])
+        single_input_dic.line_obj['valid_roa']  = check_roa(tmp_result.prefix,tmp_result.asn)
 
-        final_result = [i,dns_servers[i]]
-
-        checked_list.put(final_result)
+        output_list.put(single_input_dic)
 
 def create_workers(checked_list,sub_list_parts,dns_servers):
 

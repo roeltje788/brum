@@ -10,6 +10,7 @@
     "getroothints":"Brum will download all the Authorative Hint Root servers from IANA",
     "getrootzone":"Brum will download all the Authorative Root servers from IANA"
     },
-"workers":7
+"workers":7,
+"dicsize":100
 }
 ]

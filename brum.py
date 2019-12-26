@@ -24,7 +24,7 @@ def get_arguments(argv):
         program_supported   = file['supported']
         program_version     = file['version']
         workers             = file['workers']
-        lineset             = file['lineset']
+        dicsize             = file['dicsize']
 
     for p in program_supported:
         supported_list.append(p)
