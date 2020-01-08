@@ -1,6 +1,7 @@
 ####GENERAL#####
 import os
 import json
+import csv
 import requests
 import sys
 import getopt
@@ -8,8 +9,21 @@ import argparse
 
 def write_zone_to_file(zone,output_file):
 
-    with open(output_file, 'w') as outfile:
-        json.dump(zone, outfile)
+    json_output = output_file+'.json'
+    csv_output  = output_file+'.csv'
+
+    # JSON DUMP
+    with open(json_output, 'w') as outfile:
+        json.dump(zone, outfile, indent = 4)
+
+    # CSV DUMP
+    with open(csv_output, 'w') as outfile:
+
+        csv_writer = csv.DictWriter(outfile, fieldnames=zone[0].keys())
+        csv_writer.writeheader() # write header
+        csv_writer.writerows(zone)
+
+    # Give feedback to user
     print ('File written to disk')
 
 def download_zone(url):
@@ -70,14 +84,15 @@ def get_zone(url,output):
 
     write_zone_to_file(zone,output)
 
-def get_root_zone(output):
+def get_root_zone(settings):
 
     url = 'https://www.internic.net/domain/root.zone'
+    output = settings.output+'zone'
     get_zone(url,output)
 
-
-def get_root_hints(output):
+def get_root_hints(settings):
 
     url = 'https://www.internic.net/domain/named.root'
+    output = settings.output+'hints'
     get_zone(url,output)
 

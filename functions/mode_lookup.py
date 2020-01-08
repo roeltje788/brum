@@ -22,6 +22,13 @@ class lookup_obj:
         self.line_obj = line_obj
         self.linenumber = linenumber
 
+def get_ip(input):
+
+    if (input['ip6_address'] == 'NULL' or input['ip6_address'] == ''):
+        return input['ip4_address']
+    else:
+        return input['ip6_address']
+
 def lookupip(ip):
 
     json_response = ''
@@ -77,54 +84,6 @@ def check_roa(prefix,asn):
     except:
         return 'error'
 
-def checkip(input_list,output_list):
-
-    for single_input_dic in input_list:
-
-        ip = ''
-
-        if (single_input['ip6_address'] == 'NULL'):
-            ip = single_input_dic['ip4_address']
-        else:
-            ip = single_input_dic['ip6_address']
-
-        tmp_result  = lookupip(ip)
-
-        single_input_dic.line_obj['prefix']  = tmp_result.prefix
-        single_input_dic.line_obj['asn']     = tmp_result.asn
-
-        single_input_dic.line_obj['valid_roa']  = check_roa(tmp_result.prefix,tmp_result.asn)
-
-        output_list.put(single_input_dic)
-
-def create_workers(checked_list,sub_list_parts,dns_servers):
-
-    threads = []
-
-    #Create threads that lookup an IP at RIPE
-    for sub_list_part in sub_list_parts:
-        new_thread = threading.Thread(target=checkip,args=(checked_list,sub_list_part,dns_servers))
-        new_thread.start()
-        threads.append(new_thread)
-
-    return threads
-
-def get_lines_from_file(input,start,end):
-
-    # This function makes sure that not the entire file is read into memory, be careful when changing this function!
-    # This file is "dumb", read_from_file will handle if start and end are possible values
-
-    lines = []
-
-    with open(input) as csv_input:
-        all_lines = csv.DictReader(csv_input)
-        for i in range(start,end):
-            tmp_obj     =   all_lines[i]
-            tmp_lookup  =   lookup_obj(tmp_obj,i)
-            lines.append(tmp_lookup)
-
-    return lines
-
 def progress(ticker,percent=0, width=40):
     left = width * percent // 100
     right = width - left
@@ -139,41 +98,137 @@ def update_ticker(ticker):
     else:
         return '|'
 
-def read_from_file(input,read_list,dicsize,workers,filesize):
+class thread_obj():
 
-    # This function will read rows efficiently into memory and exit when no more lines are present
+    def __init__(self):
+        self.running = True
 
-    file_end = False # Are we at the end of the file
+    def stop(self):
+        self.running = False
 
-    currentline = 0
+class worker_obj(thread_obj):
 
-    while (!file_end):
+    def run(self,reader_queue,writer_queue):
 
-        time.sleep(1) # Prevent race against the clock, pauze for a second
+        while (self.running or not reader_queue.empty()):
 
-        end = 0
+            if (not reader_queue.empty()):
+                input_line  = reader_queue.get() #Get line
 
-        if (currentline >= filesize): # Is this the last set?
+            else:
+                continue
 
-            end = filesize
-            file_end = True
+            ip          = get_ip(input_line)
 
-        else:
+            lookup_result  = lookupip(ip)
 
-            end = currentline + dicsize
+            input_line['prefix']     = lookup_result.prefix
+            input_line['asn']        = lookup_result.asn
 
-        new_dict = get_lines_from_file(input,currentline,end)
+            input_line['valid_roa']  = check_roa(lookup_result.prefix,lookup_result.asn)
 
-        read_list.put(new_dict)
+            writer_queue.put(input_line) #Put line
 
-        currentline = end
+class reader_obj(thread_obj):
 
-def write_to_file(input,checked_list,lookup_done_token,file_length):
+    def run(self,input,reader_queue,buffer_size,sleep_reader):
 
-    threads_done        = False             #   Are the worker threads done?
-    progression_counter = 0                 #   This variable is used to give feedback on the progression to the user
-    output_file         = ''                #   Variable to add the lookups to
-    ticker              = '-'               #   Speed indicator
+        first_line = True
+        header = []
+
+        with open(input) as csv_input:
+            for line in csv_input:
+                line = line.splitlines()
+                list_line = line[0].split(',')
+                if(first_line):
+                    header = list_line
+                    first_line = False
+                else:
+                    dict_line = dict(zip(header,list_line))
+                    while (reader_queue.qsize()>=buffer_size): # Wait for the buffer to drop below a threshold
+                        time.sleep(sleep_reader)
+                    #Buffer is small enough add an item
+                    reader_queue.put(dict_line)
+
+class writer_obj(thread_obj):
+
+    def run(self,output,writer_queue,buffer_writer,filesize):
+
+        progression_counter = 0                 #   This variable is used to give feedback on the progression to the user
+        ticker              = '-'               #   Speed indicator
+        header              = []                #   The dictionary keys on the first line of the csv file
+        first_line          = True              #   Is this the first line we write
+        buffer              = []                #   This is the buffer for writing to the disk
+
+        #Write progression to file and update CLI counter
+        while (self.running or not writer_queue.empty()):
+
+            tmp_result = {}
+
+            if (not writer_queue.empty()):
+                tmp_result = writer_queue.get() # Get a result
+            else:
+                continue
+
+            if(first_line):
+
+                header = tmp_result.keys()
+                with open(output,'a') as output_file:
+                    csv_writer = csv.DictWriter(output_file, fieldnames=header)
+                    csv_writer.writeheader() # write header
+
+                first_line = False
+
+            else:
+
+                # Update counter and ticker
+                ticker = update_ticker(ticker) #Update ticker for speed indication
+
+                progression_counter +=1
+                progression_percentage = math.floor((progression_counter/filesize)*100)
+                progress(ticker,progression_percentage)
+
+                buffer.append(tmp_result)
+
+                if ( not self.running or len(buffer)>=buffer_writer):
+
+                    #Write to the output file
+                    with open(output,'a') as output_file:
+                        csv_writer = csv.DictWriter(output_file, fieldnames=header)
+                        csv_writer.writerows(buffer)
+                        buffer = []
+
+        # Lookup complete
+        progress(u'\u2713',100)
+
+def create_workers(reader_queue,writer_queue,workers):
+
+    threads = {}
+
+    #Create threads that lookup an IP at RIPE
+    for x in range(1, workers):
+        new_worker = worker_obj()
+        new_thread = threading.Thread(target=new_worker.run,args=(reader_queue,writer_queue))
+        new_thread.start()
+        threads[new_worker] = new_thread
+
+    return threads
+
+def thread_handler(reader,writer,workers,tmp_writer,writer_queue):
+
+    reader.join() # Wait until the last line is read
+
+    for t in workers: #Tell all the workers that this is the last set
+        t.stop()
+
+    for t in workers: # Wait till all workers have finished there work
+        workers[t].join()
+
+    tmp_writer.stop() #Tell the writer thread that this is the last piece of data to write
+
+    writer.join()
+
+def initialize_lookup(input):
 
     #Split input
     base_dir        = os.path.dirname(input)
@@ -189,95 +244,50 @@ def write_to_file(input,checked_list,lookup_done_token,file_length):
     epoch_time = int(time.time())
 
     output = '{}/lookups/{}_{}_lookup_results.json'.format(output_directory,file_name,epoch_time)
-    os.system('cp {} {}'.format(input,output))
+    os.system('touch {}'.format(output))
 
-    #Copy input file to output file, simply to have a start
+    #Create original file
     copy_command = 'cp {} {}/lookups/{}_lookup_original.json'.format(input,output_directory,file_name)
     os.system(copy_command)
 
-    #Open file
-    with open(output) as json_output:
-        output_file = json.load(json_output)
+    return output
 
-    #Write progression to file and update CLI counter
-    while (threads_done == False):
-
-        changes = False #Only write to disk when there are changes
-
-        #Alter file based on lookups
-        while not checked_list.empty():
-            ticker = update_ticker(ticker) #Update ticker for speed indication
-            changes = True
-            tmp_result = checked_list.get()
-            i = tmp_result[0]
-            json_result = tmp_result[1]
-            output_file[i] = json_result
-            progression_counter +=1
-
-        progression_percentage = math.floor((progression_counter/file_length)*100)
-        progress(ticker,progression_percentage)
-
-        #Check if workers threads are done
-        if not lookup_done_token.empty():
-            threads_done = lookup_done_token.get()
-
-    # All threads are done, now loop through it until all are done
-    while not checked_list.empty():
-        ticker = update_ticker(ticker) #Update ticker for speed indication
-        tmp_result = checked_list.get()
-        i = tmp_result[0]
-        json_result = tmp_result[1]
-        output_file[i] = json_result
-
-    #Write to the output file
-    with open(output,'w') as new_file:
-        json.dump(output_file,new_file, indent=4)
-
-    progress(u'\u2713',100)
-
-
-def wait_for_threads(threads):
-
-    for t in threads:
-        t.join()
-
-def analyse_data(input,workers,dicsize):
+def analyse_data(settings):
 
     # Initialisation
 
-    with open(input) as tmp:
-        filesize = sum(1 for _ in tmp)
+    filesize = 0
 
-    filesize -= filesize #correcting for first line, this line gives the names of the columns
+    with open(settings.input) as tmp:
+        filesize = sum(1 for line in tmp)
+
+    filesize = filesize - 1 #correcting for first line, this line gives the names of the columns
 
     print ('The file contains {} lines'.format(filesize))
 
     start = time.time() #Start keeping track of the time
 
-    read_list           = queue.Queue() # Items that have been read from the file that needs to be checked
-    checked_list        = queue.Queue() # Items in this list have been checked and will be written to the disk
-    lookup_done_token   = queue.Queue() # This queue will be use to signal the file writer when all other workers are done
+    output = initialize_lookup(settings.input) # Setup new files and folders on the disk to write to
+
+    reader_queue        = queue.Queue() # Items that have been read from the file that needs to be checked
+    writer_queue        = queue.Queue() # Items in this list have been checked and will be written to the disk
 
     # Start threads
 
-    file_reader_thread = threading.Thread(target=read_from_file,args=(input,read_list,dicsize,workers,filesize)) # This thread will read the data from the file in memory
+    # This thread will read the data from the file in memory
+    reader = threading.Thread(target=reader_obj().run,args=(settings.input,reader_queue,settings.buffer_reader,settings.sleep_reader))
+    reader.start()
+    # This thread will write the results to the disk
+    tmp_writer = writer_obj()
+    writer = threading.Thread(target=tmp_writer.run,args=(output,writer_queue,settings.buffer_writer,filesize))
+    writer.start()
+    # Create threads that lookup an IP at RIPE (getting data from reader_queue and writing to writer_queue)
+    workers = create_workers(reader_queue,writer_queue,settings.workers)
 
-    threads = create_workers(read_list,checked_list) #Create threads that lookup an IP at RIPE
+    # Handles the above threads in a good manner until all is done
+    thread_handler(reader,writer,workers,tmp_writer,writer_queue)
 
-    file_writer_thread = threading.Thread(target=write_to_file,args=(input,checked_list,lookup_done_token,filesize)) # This thread will write the results to the disk
-    file_writer_thread.start()
-
-    # Wait until threads finish
-
-    wait_for_threads(threads) #Wait for worker threads to join back in
-
-    lookup_done_token.put(True) # All worker threads are done, let the writer thread finish and return
-    file_writer_thread.join()
-
-    file_reader_thread.join() # Sanity check, normally this thread will finish way before
-
-    # Finish this lookup properly
-
+    # Finish this lookup correctly
     end = time.time() #End keeping track of time
 
     time_difference = math.ceil(end - start)

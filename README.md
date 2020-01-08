@@ -34,16 +34,11 @@ By writing to a .json file, the answers can be used by another program.
 
 #### Why the split?
 
-By not combine step 1 and 2. This has been considered, but is not implemented.
 Step 1 is network intensive and step 2 is CPU and RAM intensive. 
 By this division, step 1 and 2 can be run on a different machine if needed.
 
 In addition, if other functions will be added to Brum in the future, there is no need to ask RIPE again.
 The file in step 1 can used again in step 2 giving more information in the second run. 
-
-### 3: Read report
-The output of step 2 is a .json file this can be used by another program.
-To make it more human friendly, this step will take the .json file created in step 2 and generate a readable file with the results.
 
 ## Dependencies
 
@@ -112,21 +107,9 @@ Source: https://stat.ripe.net/docs/data_api/
 
 ## Supported input filetypes
 
-### JSON
-
-Currently a file used as input to Brum must be of type .json.
-Other filetypes such as .yml or .csv are NOT supported.
-Please convert first before use.
-
 ### CSV
-CSV is not supported, but can be converted as follows to .json.
-```
-csvtojson <csvfilepath> > <outputfile>
-```
-<br />
-<strong>csvfilepath:</strong> is the current location of the input csv file.
-<br />
-<strong>outputfile:</strong> the location where the output .json file should be stored (with a .json extension) 
+CSV is the supported filetype. This way Brum can read the file line by line and does not have to hold the whole file in memory. 
+
 
 ## Supported output filetypes
 
@@ -140,11 +123,8 @@ Having all dependecies for Brum (see section dependencies) and a python3 interpe
 ### Python
 
 <p>The minimum version of python is currently: 3.3</p>
-<p>A lower version will probably give errors.</p>
 
 ## File size limitations
 
-Currently Brum uses an integer internally to loop through the lines. Save would be to stay below  2,000,000,000 lines in an input file.
-Keep in mind that having a very small filesize can give a very skewed result, have a larger file size (>1000) will give a more balanced result.
-
+There is no limitations on the filesize. Brum loops through the file and does not store the whole file in memory. This way any filesize can be used (apart from Python or system limitations).
 

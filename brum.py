@@ -10,69 +10,72 @@ from functions.mode_report  import *
 from functions.mode_getzone import *
 from functions.mode_batch   import *
 
-def get_arguments(argv):
+class settings:
+    def __init__(self,tmp_settings,tmp_arguments = None):
+
+        self.supported      = tmp_settings['supported']
+        self.version        = tmp_settings['version']
+        self.workers        = tmp_settings['workers']
+        self.buffer_reader  = tmp_settings['buffer_reader']
+        self.buffer_writer  = tmp_settings['buffer_writer']
+        self.sleep_writer   = tmp_settings['sleep_writer']
+        self.sleep_reader   = tmp_settings['sleep_reader']
+
+        if (not tmp_arguments == None):
+
+            self.mode           = tmp_arguments.mode
+            self.input          = tmp_arguments.input
+            self.output         = tmp_arguments.output
+
+def set_settings(argv):
 
     # Get supported modes
-    supported_list      = []
-    program_version     = ''
-    program_supported   = ''
-    workers             = ''
+    file_settings   =   {}
 
     with open('./settings/settings.json') as json_file:
 
-        file                = json.load(json_file)[0]
-        program_supported   = file['supported']
-        program_version     = file['version']
-        workers             = file['workers']
-        dicsize             = file['dicsize']
+        file_settings       = json.load(json_file)[0]
 
-    for p in program_supported:
-        supported_list.append(p)
+    tmp_settings = settings(file_settings)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("mode",choices=supported_list,help="The different modes of brum")
+    parser.add_argument("mode",choices=tmp_settings.supported,help="The different modes of brum")
     parser.add_argument("-i", "--input" ,help="Input file used by one of the modes")
     parser.add_argument("-o", "--output",help="Output file used by one of the modes")
     args = parser.parse_args()
 
-    total_args = [args,supported_list,program_version,workers,lineset]
+    return  settings(file_settings,args)
 
-    return total_args
-
-def main(argv):
-
-    total_arguments = get_arguments(argv)
-
-    arguments       = total_arguments[0]
-    supported_list  = total_arguments[1]
-    program_version = total_arguments[2]
-    workers         = total_arguments[3]
-    lineset         = total_arguments[4]
+def welcome_message(new_settings):
 
     print ("\n")
-    print ("Welcome to Brum. A RPKI deployment analysis tool (Version:{})".format(program_version))
+    print ("Welcome to Brum. A RPKI deployment analysis tool (Version:{})".format(new_settings.version))
     print ("Following functions are supported (-h for help): ", end=' ')
 
-    for p in supported_list:
+    for p in new_settings.supported:
         print ("{}".format(p),end=' ')
     print ("\n")
 
-    option = arguments.mode
+def main(argv):
 
-    #Set and run mode
+    settings = set_settings(argv) # Get all settings for Brum to run
 
-    if (option == 'lookup'):
-        analyse_data(arguments.input,workers,lineset)
-    elif (option == 'report'):
-        generate_report(arguments.input)
-    elif (option == 'getroothints'):
-        get_root_hints(arguments.output)
-    elif (option == 'getrootzone'):
-        get_root_zone(arguments.output)
-    elif (option == 'batchreport'):
-        batch_report(arguments.input)
-    elif (option == 'batchlookup'):
-        batch_lookup(arguments.input,workers,lineset)
+    welcome_message(settings) # Send the welcome message to the output for the user to read
+
+    #run a supported mode or  give an error
+
+    if (settings.mode == 'lookup'):
+        analyse_data(settings)
+    elif (settings.mode == 'batchlookup'):
+        batch_lookup(settings) #input,workers,lineset
+    elif (settings.mode == 'report'):
+        generate_report(settings) #input
+    elif (settings.mode == 'batchreport'):
+        batch_report(settings) #input
+    elif (settings.mode == 'getroothints'):
+        get_root_hints(settings) #output
+    elif (settings.mode == 'getrootzone'):
+        get_root_zone(settings) #output
     else:
         print ('That mode is not (yet) supported.')
 

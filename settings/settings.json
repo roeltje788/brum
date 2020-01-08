@@ -1,6 +1,6 @@
 [
 {
-"version":"0.1",
+"version":"0.1.1",
 "supported":
     {
     "lookup":"Brum will analyse a list of ip-addresses (must be a JSON file) ",
@@ -11,6 +11,9 @@
     "getrootzone":"Brum will download all the Authorative Root servers from IANA"
     },
 "workers":7,
-"dicsize":100
+"buffer_reader":100,
+"buffer_writer":100,
+"sleep_reader":1,
+"sleep_writer":1
 }
 ]
