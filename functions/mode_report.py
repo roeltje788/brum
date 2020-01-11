@@ -1,5 +1,6 @@
 ###GENERAL####
 import json
+import csv
 import sys
 import os
 import time
@@ -7,21 +8,10 @@ import math
 from collections import Counter
 from itertools import islice
 
-#Questions to answer:
-'''
-    Basic report (arguments:ns_address,ip4_address,ip6_address,asn,prefix):
+# Basic argument(s):	ns_address,ip4_address,ip6_address,asn,prefix
+# Add.  argument(s):	tot
+# Add.  argument(s):	country
 
-    Additional argument(s):tot:
-
-    (ignore those without a domain name!!)
-
-    - Give tot number of domains protected (only possible if tot exists)
-
-    Additional argument(s):country:
-
-    -Difference per country?
-
-'''
 # General
 
 def take(n, iterable):
@@ -40,6 +30,13 @@ def create_percentage (total,part):
 
     percentage = (round((part/total)*100,2))
     return percentage
+
+def is_row_empty(value):
+
+    if (value == 'NULL' or value == ''):
+        return True
+    else:
+        return False
 
 ##CLASSES####
 
@@ -172,7 +169,7 @@ def roa_checker(json_file,tot,country):
     for single_row in json_file:
         if (single_row['valid_roa'] == 'valid'):
             protected_complete+=1
-            if (single_row['ip6_address'] == 'NULL' ):
+            if ( is_row_empty(single_row['ip6_address']) ):
                 protected_ip4+=1
                 if(tot):
                     protected_ip4_domains += int(single_row['tot'])
@@ -180,7 +177,7 @@ def roa_checker(json_file,tot,country):
                     protected_ip4_netherlands+=1
                     if(tot):
                         protected_ip4_netherlands_domains+= int(single_row['tot'])
-            if (single_row['ip4_address'] == 'NULL' ):
+            if ( is_row_empty(single_row['ip4_address']) ):
                 protected_ip6+=1
                 if(tot):
                     protected_ip6_domains += int(single_row['tot'])
@@ -214,23 +211,23 @@ def error_checker(json_file):
         if (single_row['prefix'] == 'error'):
             error_complete = True
             error_ip_lookup = True
-            if (single_row['ip6_address'] == 'NULL'):
+            if (is_row_empty(single_row['ip6_address'])):
                 error_ip4 = True
-            if (single_row['ip4_address'] == 'NULL'):
+            if (is_row_empty(single_row['ip4_address'])):
                 error_ip6 = True
         if (single_row['asn'] == 'error'):
             error_complete = True
             error_ip_lookup = True
-            if (single_row['ip6_address'] == 'NULL'):
+            if (is_row_empty(single_row['ip6_address'])):
                 error_ip4 = True
-            if (single_row['ip4_address'] == 'NULL'):
+            if (is_row_empty(single_row['ip4_address'])):
                 error_ip6 = True
         if (single_row['valid_roa'] == 'error'):
             error_complete = True
             error_roa_lookup = True
-            if (single_row['ip6_address'] == 'NULL'):
+            if (is_row_empty(single_row['ip6_address'])):
                 error_ip4 = True
-            if (single_row['ip4_address'] == 'NULL'):
+            if (is_row_empty(single_row['ip4_address'])):
                 error_ip6 = True
 
         if (error_complete == True):
@@ -269,7 +266,7 @@ def get_unique_ip(json_file):
 
     for single_row in json_file:
         sorter = ''
-        if (single_row['ip4_address'] == 'NULL'):
+        if (is_row_empty(single_row['ip4_address'])):
             sorter = single_row['ip6_address']
         else:
             sorter = single_row['ip4_address']
@@ -334,7 +331,7 @@ def ordered_list_checker(ordered_list):
 
     return ordered_list_analyser(file_length,complete_protected,partial_protected,file_length,complete_protected_list,partial_protected_list,unprotected_list)
 
-def basic_tests(json_file,asn_ordered,prefix_ordered,error_results,tot,country):
+def tester(json_file,asn_ordered,prefix_ordered,error_results,tot,country):
 
     json_results                    =   {}
 
@@ -348,27 +345,7 @@ def basic_tests(json_file,asn_ordered,prefix_ordered,error_results,tot,country):
 
     return json_results
 
-# Tests for tot argument
-
-def tot_tests(json_file):
-    return 0
-
-# Tests for country argument
-
-def country_tests(json_file):
-    return 0
-
 # File management
-
-def get_json_file(input):
-
-    input_file = []
-
-    #Open file
-    with open(input) as json_input:
-        input_file = json.load(json_input)
-
-    return input_file
 
 def write_results_to_disk(input,report_dict,error_results,asn_ordered,prefix_ordered,roa_ordered,ip_ordered):
 
@@ -408,62 +385,77 @@ def write_results_to_disk(input,report_dict,error_results,asn_ordered,prefix_ord
     ip_location = '{}/reports/{}_{}_report_ip_ordered.json'.format(output_directory,file_name,epoch_time)
     write_json_file(ip_ordered,ip_location)
 
+def get_input_file(input):
+
+    input_file = []
+
+    #CSV to json
+    os.system('csvtojson {} > {}.json'.format(input,input))
+
+    #Open file
+    inputfile = input+'.json'
+    with open(inputfile) as json_input:
+        input_file = json.load(json_input)
+
+    return input_file
+
 # Main program
 
-def generate_report(input):
+def generate_report(settings):
 
     report_dict = {} #This report will contain all results generated below and will later be written to the disk
 
-    json_file = get_json_file(input) #Get the file to make the report for
-    file_length = len(json_file)
+    input_file = get_input_file(settings.input) #Get the file to make the report for
+    file_length = len(input_file)
+
+    print ('{}'.format(file_length))
 
     print ('Test analyses on the first line in the input file. All lines should have the same arguments!')
 
     #Check test (exit if basic test cannot run)
-    if (validate_basic_test(json_file)): #Basic test
+    if (validate_basic_test(input_file)): #Basic test
         print(u'\u2713'+" All basic tests")
 
         # Generate some files ordered differently
 
         # Sort for domains
 
-        asn_ordered                     =   sort_by(json_file,'asn')
-        prefix_ordered                  =   sort_by(json_file,'prefix')
-        roa_ordered                     =   sort_by(json_file,'valid_roa')
+        asn_ordered                     =   sort_by(input_file,'asn')
+        prefix_ordered                  =   sort_by(input_file,'prefix')
+        roa_ordered                     =   sort_by(input_file,'valid_roa')
 
         # Sort for unique IP's
 
-        unique_ip_list                  =   get_unique_ip(json_file)
+        unique_ip_list                  =   get_unique_ip(input_file)
 
         unique_asn_ordered              =   sort_by(unique_ip_list,'asn')
         unique_prefix_ordered           =   sort_by(unique_ip_list,'prefix')
         unique_roa_ordered              =   sort_by(unique_ip_list,'valid_roa')
 
-        # Run basic tests
+        # Can we run some additional tests?
 
         tot = False
 
-        if (check_argument(json_file, 'tot')): # TOT
+        if (check_argument(input_file, 'tot')): # TOT
             print (u'\u2713'+" Tot tests")
             tot = True
 
         country = False
 
-        if (check_argument(json_file, 'country')): # COUNTRY
+        if (check_argument(input_file, 'country')): # COUNTRY
             print (u'\u2713'+" Country tests")
             country = True
 
+        # Run tests
 
-        error_results                   =   error_checker(json_file)
-        report_dict['domain']           =   basic_tests(json_file,asn_ordered,prefix_ordered,error_results,tot,country)
+        error_results                   =   error_checker(input_file)
+        report_dict['domain']           =   tester(input_file,asn_ordered,prefix_ordered,error_results,tot,country)
         unique_error_results            =   error_checker(unique_ip_list)
-        report_dict['ip']               =   basic_tests(json_file,unique_asn_ordered,unique_prefix_ordered,unique_error_results,False,False)
-        report_dict['tot']              =   tot_tests(json_file)
-        report_dict['country']          =   country_tests(json_file)
+        report_dict['ip']               =   tester(input_file,unique_asn_ordered,unique_prefix_ordered,unique_error_results,False,False)
 
     else:
         print (u'\u2717'+' All basic arguments')
 
     #Generate output files and write to disk
 
-    write_results_to_disk(input,report_dict,error_results,asn_ordered,prefix_ordered,roa_ordered,unique_ip_list)
+    write_results_to_disk(settings.input,report_dict,error_results,asn_ordered,prefix_ordered,roa_ordered,unique_ip_list)

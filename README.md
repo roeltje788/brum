@@ -51,6 +51,12 @@ npm install dns-zonefile
 ```
 Source:https://www.npmjs.com/package/dns-zonefile
 
+### csvtojson
+This program helps converting back and forth from csv to json. It's for internal use. 
+```
+sudo npm install -g csvtojson
+```
+
 ## Arguments
 
 All possible arguments will be shown in the command line with the command: 
