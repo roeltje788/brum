@@ -236,18 +236,17 @@ def initialize_lookup(input):
     file_name       = file[0]
     file_extension  = file[1]
 
-    output_directory = '{}/{}'.format(base_dir,file_name)
+    output_directory = '{}/{}_lookups'.format(base_dir,file_name)
 
     os.system('mkdir -p {}'.format(output_directory))
-    os.system('mkdir -p {}/lookups'.format(output_directory))
 
     epoch_time = int(time.time())
 
-    output = '{}/lookups/{}_{}_lookup_results.json'.format(output_directory,file_name,epoch_time)
+    output = '{}/{}_{}_lookup_results.csv'.format(output_directory,file_name,epoch_time)
     os.system('touch {}'.format(output))
 
     #Create original file
-    copy_command = 'cp {} {}/lookups/{}_lookup_original.json'.format(input,output_directory,file_name)
+    copy_command = 'cp {} {}/{}_lookup_original.csv'.format(input,output_directory,file_name)
     os.system(copy_command)
 
     return output
