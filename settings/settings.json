@@ -8,7 +8,8 @@
     "report":"Brum will use a file created by *analyse* and generate information about this file",
     "batchreport":"same functionality as mode report, but report will run for every line in the specified file",
     "getroothints":"Brum will download all the Authorative Hint Root servers from IANA",
-    "getrootzone":"Brum will download all the Authorative Root servers from IANA"
+    "getrootzone":"Brum will download all the Authorative Root servers from IANA",
+    "domainreport":"Brum will crossreference a file with an already checked file with DNS servers"
     },
 "workers":7,
 "buffer_reader":100,

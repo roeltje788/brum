@@ -5,10 +5,11 @@ import argparse
 # CUSTOM
 
 # folder:functions
-from functions.mode_lookup  import *
-from functions.mode_report  import *
-from functions.mode_getzone import *
-from functions.mode_batch   import *
+from functions.mode_lookup          import *
+from functions.mode_report          import *
+from functions.mode_getzone         import *
+from functions.mode_batch           import *
+from functions.mode_domainreport    import *
 
 class settings:
     def __init__(self,tmp_settings,tmp_arguments = None):
@@ -26,6 +27,7 @@ class settings:
             self.mode           = tmp_arguments.mode
             self.input          = tmp_arguments.input
             self.output         = tmp_arguments.output
+            self.reference      = tmp_arguments.reference
 
 def set_settings(argv):
 
@@ -42,6 +44,7 @@ def set_settings(argv):
     parser.add_argument("mode",choices=tmp_settings.supported,help="The different modes of brum")
     parser.add_argument("-i", "--input" ,help="Input file used by one of the modes")
     parser.add_argument("-o", "--output",help="Output file used by one of the modes")
+    parser.add_argument("-r", "--reference",help="Reference file for domain checking")
     args = parser.parse_args()
 
     return  settings(file_settings,args)
@@ -76,6 +79,8 @@ def main(argv):
         get_root_hints(settings) #output
     elif (settings.mode == 'getrootzone'):
         get_root_zone(settings) #output
+    elif (settings.mode == 'domainreport'):
+        generate_report(settings) #input
     else:
         print ('That mode is not (yet) supported.')
 
