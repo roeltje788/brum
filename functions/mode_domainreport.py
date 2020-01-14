@@ -50,7 +50,7 @@ def write_results_to_disk(result_dict,input):
 
 # Start function
 
-def generate_report(settings):
+def generate_domainreport(settings):
 
     # Get input files
 

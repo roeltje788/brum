@@ -80,7 +80,7 @@ def main(argv):
     elif (settings.mode == 'getrootzone'):
         get_root_zone(settings) #output
     elif (settings.mode == 'domainreport'):
-        generate_report(settings) #input
+        generate_domainreport(settings) #input
     else:
         print ('That mode is not (yet) supported.')
 
