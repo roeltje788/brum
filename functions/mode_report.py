@@ -187,7 +187,7 @@ def roa_checker(json_file,tot,country,country_code):
                         protected_ip6_country_domains+= int(single_row['tot'])
 
 
-    return roa_analyser(file_length,protected_complete,protected_ip4,protected_ip6,tot,protected_ip4_domains,protected_ip6_domains,country,protected_ip4_country,protected_ip6_country,protected_ip4_country_domains,protected_ip6_country_domains)
+    return roa_analyser(file_length,protected_complete,protected_ip4,protected_ip6,tot,protected_ip4_domains,protected_ip6_domains,country,protected_ip4_country,protected_ip6_country,protected_ip4_country_domains,protected_ip6_country_domains,country_code)
 
 def error_checker(json_file):
 
