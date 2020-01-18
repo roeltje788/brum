@@ -9,9 +9,13 @@ def batch_report(settings):
             if (line == ' ' or line ==  '\n' ):
                 continue
             single_file = line.splitlines()[0]
+            country_code     = line.splitlines()[1]
 
             print ('\n Currently handling file: {}\n'.format(single_file))
-            generate_report(single_file)
+            tmp_settings = settings
+            tmp_settings.input = single_file
+            tmp_settings.country_code = country_code
+            generate_report(tmp_settings)
 
 def batch_lookup(settings):
 

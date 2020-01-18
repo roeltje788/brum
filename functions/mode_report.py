@@ -41,7 +41,7 @@ def is_row_empty(value):
 ##CLASSES####
 
 class roa_analyser:
-    def __init__(self,file_length,valid_roas,valid_ip4_roas,valid_ip6_roas,tot,protected_ip4_domains,protected_ip6_domains,country,protected_ip4_netherlands,protected_ip6_netherlands,protected_ip4_netherlands_domains,protected_ip6_netherlands_domains):
+    def __init__(self,file_length,valid_roas,valid_ip4_roas,valid_ip6_roas,tot,protected_ip4_domains,protected_ip6_domains,country,protected_ip4_country,protected_ip6_country,protected_ip4_country_domains,protected_ip6_country_domains,country_code):
 
         self.json_results                           =   {}
 
@@ -56,13 +56,13 @@ class roa_analyser:
             self.json_results['protected_ip4_domains']  =   protected_ip4_domains
             self.json_results['protected_ip6_domains']  =   protected_ip6_domains
         if (country):
-            self.json_results['protected_netherlands']      =   protected_ip4_netherlands + protected_ip6_netherlands
-            self.json_results['protected_ip4_netherlands']  =   protected_ip4_netherlands
-            self.json_results['protected_ip6_netherlands']  =   protected_ip6_netherlands
+            self.json_results['protected_'+country_code]      =   protected_ip4_country + protected_ip6_country
+            self.json_results['protected_ip4_'+country_code]  =   protected_ip4_country
+            self.json_results['protected_ip6_'+country_code]  =   protected_ip6_country
         if (tot and country):
-            self.json_results['protected_netherlands_domains']      =   protected_ip4_netherlands_domains + protected_ip6_netherlands_domains
-            self.json_results['protected_ip4_netherlands_domains']  =   protected_ip4_netherlands_domains
-            self.json_results['protected_ip6_netherlands_domains']  =   protected_ip6_netherlands_domains
+            self.json_results['protected_'+country_code+'_domains']      =   protected_ip4_country_domains + protected_ip6_country_domains
+            self.json_results['protected_ip4_'+country_code+'_domains']  =   protected_ip4_country_domains
+            self.json_results['protected_ip6_'+country_code+'_domains']  =   protected_ip6_country_domains
 
     def json_object(self):
 
@@ -148,7 +148,7 @@ def validate_basic_test(input):
 # ALL TESTS
 
 # Basic tests
-def roa_checker(json_file,tot,country):
+def roa_checker(json_file,tot,country,country_code):
 
     protected_complete                  =   0
     protected_ip4                       =   0
@@ -157,11 +157,11 @@ def roa_checker(json_file,tot,country):
     protected_ip4_domains               =   0
     protected_ip6_domains               =   0
 
-    protected_ip4_netherlands           =   0
-    protected_ip6_netherlands           =   0
+    protected_ip4_country               =   0
+    protected_ip6_country               =   0
 
-    protected_ip4_netherlands_domains   =   0
-    protected_ip6_netherlands_domains   =   0
+    protected_ip4_country_domains       =   0
+    protected_ip6_country_domains       =   0
 
 
     file_length = len(json_file)
@@ -173,21 +173,21 @@ def roa_checker(json_file,tot,country):
                 protected_ip4+=1
                 if(tot):
                     protected_ip4_domains += int(single_row['tot'])
-                if(country and single_row['country'] == 'NL'):
-                    protected_ip4_netherlands+=1
+                if(country and single_row['country'] == country_code):
+                    protected_ip4_country+=1
                     if(tot):
-                        protected_ip4_netherlands_domains+= int(single_row['tot'])
+                        protected_ip4_country_domains+= int(single_row['tot'])
             if ( is_row_empty(single_row['ip4_address']) ):
                 protected_ip6+=1
                 if(tot):
                     protected_ip6_domains += int(single_row['tot'])
-                if(country and single_row['country'] == 'NL'):
-                    protected_ip6_netherlands+=1
+                if(country and single_row['country'] == country_code):
+                    protected_ip6_country+=1
                     if(tot):
-                        protected_ip6_netherlands_domains+= int(single_row['tot'])
+                        protected_ip6_country_domains+= int(single_row['tot'])
 
 
-    return roa_analyser(file_length,protected_complete,protected_ip4,protected_ip6,tot,protected_ip4_domains,protected_ip6_domains,country,protected_ip4_netherlands,protected_ip6_netherlands,protected_ip4_netherlands_domains,protected_ip6_netherlands_domains)
+    return roa_analyser(file_length,protected_complete,protected_ip4,protected_ip6,tot,protected_ip4_domains,protected_ip6_domains,country,protected_ip4_country,protected_ip6_country,protected_ip4_country_domains,protected_ip6_country_domains)
 
 def error_checker(json_file):
 
@@ -331,14 +331,14 @@ def ordered_list_checker(ordered_list):
 
     return ordered_list_analyser(file_length,complete_protected,partial_protected,file_length,complete_protected_list,partial_protected_list,unprotected_list)
 
-def tester(json_file,asn_ordered,prefix_ordered,error_results,tot,country):
+def tester(json_file,asn_ordered,prefix_ordered,error_results,tot,country,country_code):
 
     json_results                    =   {}
 
     file_length                     =   len(json_file)
 
     json_results['row_count']       =   file_length
-    json_results['roa_validity']    =   roa_checker(json_file,tot,country).json_object()
+    json_results['roa_validity']    =   roa_checker(json_file,tot,country,country_code).json_object()
     json_results['asn']             =   ordered_list_checker(asn_ordered).json_object()
     json_results['prefix']          =   ordered_list_checker(prefix_ordered).json_object()
     json_results['errors']          =   error_results.json_object()
@@ -408,6 +408,8 @@ def generate_report(settings):
     input_file = get_input_file(settings.input) #Get the file to make the report for
     file_length = len(input_file)
 
+    country_code = settings.country_code# Get country code
+
     print ('{}'.format(file_length))
 
     print ('Test analyses on the first line in the input file. All lines should have the same arguments!')
@@ -449,9 +451,9 @@ def generate_report(settings):
         # Run tests
 
         error_results                   =   error_checker(input_file)
-        report_dict['domain']           =   tester(input_file,asn_ordered,prefix_ordered,error_results,tot,country)
+        report_dict['domain']           =   tester(input_file,asn_ordered,prefix_ordered,error_results,tot,country,country_code)
         unique_error_results            =   error_checker(unique_ip_list)
-        report_dict['ip']               =   tester(input_file,unique_asn_ordered,unique_prefix_ordered,unique_error_results,False,False)
+        report_dict['ip']               =   tester(input_file,unique_asn_ordered,unique_prefix_ordered,unique_error_results,False,False,country_code)
 
     else:
         print (u'\u2717'+' All basic arguments')
