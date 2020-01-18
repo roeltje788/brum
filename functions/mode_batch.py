@@ -8,8 +8,13 @@ def batch_report(settings):
         for line in batch:
             if (line == ' ' or line ==  '\n' ):
                 continue
-            single_file = line.splitlines()[0]
-            country_code     = line.splitlines()[1]
+
+            single_line = line.splitlines()[0]
+
+            values = single_line.split(',')
+
+            single_file     = values[0]
+            country_code    = values[1]
 
             print ('\n Currently handling file: {}\n'.format(single_file))
             tmp_settings = settings
