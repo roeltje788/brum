@@ -28,7 +28,7 @@ class settings:
             self.input          = tmp_arguments.input
             self.output         = tmp_arguments.output
             self.reference      = tmp_arguments.reference
-            self.country_code   = tmp_arguments.country_code
+            self.country_code   = tmp_arguments.country
 
 def set_settings(argv):
 
@@ -46,7 +46,7 @@ def set_settings(argv):
     parser.add_argument("-i", "--input" ,help="Input file used by one of the modes")
     parser.add_argument("-o", "--output",help="Output file used by one of the modes")
     parser.add_argument("-r", "--reference",help="Reference file for domain checking")
-    parser.add_argument("-c", "--country",help="Country code to use for the report")
+    parser.add_argument("-c", "--country",help="Country code used in report mode")
     args = parser.parse_args()
 
     return  settings(file_settings,args)
