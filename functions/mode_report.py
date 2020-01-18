@@ -41,7 +41,7 @@ def is_row_empty(value):
 ##CLASSES####
 
 class roa_analyser:
-    def __init__(self,file_length,valid_roas,valid_ip4_roas,valid_ip6_roas,tot,protected_ip4_domains,protected_ip6_domains,country,protected_ip4_country,protected_ip6_country,protected_ip4_country_domains,protected_ip6_country_domains,country_code):
+    def __init__(self,file_length,valid_roas,valid_ip4_roas,valid_ip6_roas,tot,protected_ip4_domains,protected_ip6_domains,country,protected_ip4_country,protected_ip6_country,protected_ip4_country_domains,protected_ip6_country_domains,country_code,total_for_country_code):
 
         self.json_results                           =   {}
 
@@ -56,13 +56,21 @@ class roa_analyser:
             self.json_results['protected_ip4_domains']  =   protected_ip4_domains
             self.json_results['protected_ip6_domains']  =   protected_ip6_domains
         if (country):
-            self.json_results['protected_'+country_code]      =   protected_ip4_country + protected_ip6_country
-            self.json_results['protected_ip4_'+country_code]  =   protected_ip4_country
-            self.json_results['protected_ip6_'+country_code]  =   protected_ip6_country
+
+            protected_country_code                                      =   protected_ip4_country + protected_ip6_country
+
+            self.json_results['country_code_total']                     =   total_for_country_code
+            self.json_results['country_code_total_p']                   =   create_percentage(file_length,total_for_country_code)
+            self.json_results['protected_'+country_code]                =   protected_country_code
+            self.json_results['protected_'+country_code+'_p']           =   create_percentage(total_for_country_code,protected_country_code)
+            self.json_results['protected_ip4_'+country_code]            =   protected_ip4_country
+            self.json_results['protected_ip4_'+country_code+'_p']       =   create_percentage(protected_country_code,protected_ip4_country)
+            self.json_results['protected_ip6_'+country_code]            =   protected_ip6_country
+            self.json_results['protected_ip6_'+country_code+'_p']       =   create_percentage(protected_country_code,protected_ip6_country)
         if (tot and country):
-            self.json_results['protected_'+country_code+'_domains']      =   protected_ip4_country_domains + protected_ip6_country_domains
-            self.json_results['protected_ip4_'+country_code+'_domains']  =   protected_ip4_country_domains
-            self.json_results['protected_ip6_'+country_code+'_domains']  =   protected_ip6_country_domains
+            self.json_results['protected_'+country_code+'_domains']     =   protected_ip4_country_domains + protected_ip6_country_domains
+            self.json_results['protected_ip4_'+country_code+'_domains'] =   protected_ip4_country_domains
+            self.json_results['protected_ip6_'+country_code+'_domains'] =   protected_ip6_country_domains
 
     def json_object(self):
 
@@ -163,10 +171,19 @@ def roa_checker(json_file,tot,country,country_code):
     protected_ip4_country_domains       =   0
     protected_ip6_country_domains       =   0
 
+    total_for_country_code              =   0
 
     file_length = len(json_file)
 
     for single_row in json_file:
+
+        # Count total number of countries in file
+
+        if (single_row['country'] == country_code):
+            total_for_country_code+=1
+
+        # Calculate ROA results
+
         if (single_row['valid_roa'] == 'valid'):
             protected_complete+=1
             if ( is_row_empty(single_row['ip6_address']) ):
@@ -187,7 +204,7 @@ def roa_checker(json_file,tot,country,country_code):
                         protected_ip6_country_domains+= int(single_row['tot'])
 
 
-    return roa_analyser(file_length,protected_complete,protected_ip4,protected_ip6,tot,protected_ip4_domains,protected_ip6_domains,country,protected_ip4_country,protected_ip6_country,protected_ip4_country_domains,protected_ip6_country_domains,country_code)
+    return roa_analyser(file_length,protected_complete,protected_ip4,protected_ip6,tot,protected_ip4_domains,protected_ip6_domains,country,protected_ip4_country,protected_ip6_country,protected_ip4_country_domains,protected_ip6_country_domains,country_code,total_for_country_code)
 
 def error_checker(json_file):
 
