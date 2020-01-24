@@ -10,6 +10,7 @@ from functions.mode_report          import *
 from functions.mode_getzone         import *
 from functions.mode_batch           import *
 from functions.mode_domainreport    import *
+from functions.mode_rootreport      import *
 
 class settings:
     def __init__(self,tmp_settings,tmp_arguments = None):
@@ -72,17 +73,19 @@ def main(argv):
     if (settings.mode == 'lookup'):
         analyse_data(settings)
     elif (settings.mode == 'batchlookup'):
-        batch_lookup(settings) #input,workers,lineset
+        batch_lookup(settings)
     elif (settings.mode == 'report'):
-        generate_report(settings) #input
+        generate_report(settings)
     elif (settings.mode == 'batchreport'):
-        batch_report(settings) #input
+        batch_report(settings)
     elif (settings.mode == 'getroothints'):
-        get_root_hints(settings) #output
+        get_root_hints(settings)
     elif (settings.mode == 'getrootzone'):
-        get_root_zone(settings) #output
+        get_root_zone(settings)
     elif (settings.mode == 'domainreport'):
-        generate_domainreport(settings) #input
+        generate_domainreport(settings)
+    elif (settings.mode == 'rootreport'):
+        generate_rootreport(settings)
     else:
         print ('That mode is not (yet) supported.')
 

@@ -1,6 +1,6 @@
 [
 {
-"version":"0.1.3",
+"version":"0.1.4",
 "supported":
     {
     "lookup":"Brum will analyse a list of ip-addresses (must be a JSON file) ",
@@ -9,7 +9,8 @@
     "batchreport":"same functionality as mode report, but report will run for every line in the specified file",
     "getroothints":"Brum will download all the Authorative Hint Root servers from IANA",
     "getrootzone":"Brum will download all the Authorative Root servers from IANA",
-    "domainreport":"Brum will crossreference a file with an already checked file with DNS servers"
+    "domainreport":"Brum will crossreference a file with an already checked file with DNS servers",
+    "rootreport":"Brum will analyse a root zone file and will give more specific information then the report mode"
     },
 "workers":7,
 "buffer_reader":100,

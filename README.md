@@ -88,6 +88,10 @@ TODO: explain how to add a function
 
 This program makes use of several sources:
 
+###TLD list
+This list is originally from IANA: https://www.iana.org/domains/root/db
+Though since IANA does not provide the list as csv, the following list is used which uses the IANA list as source: https://raw.githubusercontent.com/gh0stwizard/iana-tld-extractor/master/tld.csv
+
 ### Wikipedia public resolvers
 There is no official list of public resolvers to test the RPKI deployment. 
 There is however a unofficial quiet extensive list on Wikipedia.
