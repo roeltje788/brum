@@ -168,6 +168,7 @@ def get_basic_deep_result():
 
     tmp         =   {
         'total':0,
+        'total_p':0,
         'total_protected':0,
         'total_protected_p':0,
         'ipv4_total':0,
@@ -187,17 +188,27 @@ def deep_analyser(final_results,errors):
     # Initialize results for deep analyser
 
     deep_results                        =   {}
+
+    deep_results['total']               =   0
+
+    deep_results['errors']              =   errors
+    deep_results['errors_p']            =   0
+
     deep_results['generic']             =   get_basic_deep_result()
     deep_results['country-code']        =   get_basic_deep_result()
     deep_results['sponsored']           =   get_basic_deep_result()
     deep_results['infrastructure']      =   get_basic_deep_result()
     deep_results['generic-restricted']  =   get_basic_deep_result()
 
-    deep_results['errors']              =   errors
+
 
     # Generate deep results
 
+    total                               =   0
+
     for row in final_results:
+
+        total                                           +=  row['total']
 
         deep_results[row['type']]['total']              +=  row['total']
         deep_results[row['type']]['total_protected']    +=  row['total_protected']
@@ -206,6 +217,9 @@ def deep_analyser(final_results,errors):
         deep_results[row['type']]['ipv6_total']         +=  row['ipv6_total']
         deep_results[row['type']]['ipv6_protected']     +=  row['ipv6_protected']
 
+    deep_results['total']                               =   total
+    deep_results['errors_p']                            =   create_percentage(deep_results['total'] ,errors)
+
     # Generate percentages
 
     tld_types = ['generic','country-code','sponsored','infrastructure','generic-restricted']
@@ -213,6 +227,8 @@ def deep_analyser(final_results,errors):
     for tld_type in tld_types:
 
         tmp_deep_result = deep_results[tld_type]
+
+        tmp_deep_result['total_p']              =   create_percentage (deep_results['total'],tmp_deep_result['total'])
 
         tmp_deep_result['total_protected_p']    =   create_percentage (tmp_deep_result['total'],tmp_deep_result['total_protected'])
         tmp_deep_result['ipv4_total_p']         =   create_percentage (tmp_deep_result['total'],tmp_deep_result['ipv4_total'])
