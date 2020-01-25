@@ -88,7 +88,7 @@ TODO: explain how to add a function
 
 This program makes use of several sources:
 
-###TLD list
+### TLD list
 This list is originally from IANA: https://www.iana.org/domains/root/db
 Though since IANA does not provide the list as csv, the following list is used which uses the IANA list as source: https://raw.githubusercontent.com/gh0stwizard/iana-tld-extractor/master/tld.csv
 
