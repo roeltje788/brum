@@ -175,6 +175,7 @@ Source: https://stat.ripe.net/docs/data_api/
 ### CSV
 CSV is the supported filetype. This way Brum can read the file line by line and does not have to hold the whole file in memory. 
 
+Note: in some cases a .json file is required
 
 ## Supported output filetypes
 
