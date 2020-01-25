@@ -23,6 +23,13 @@ def write_json_file(json_data,location):
     with open(location, "w") as output:
         output.write(json.dumps(json_data, indent=4))
 
+def get_ip(input):
+
+    if (input['ip6_address'] == 'NULL' or input['ip6_address'] == ''):
+        return input['ip4_address']
+    else:
+        return input['ip6_address']
+
 def create_percentage (total,part):
 
     if (total == 0):
@@ -77,7 +84,7 @@ class roa_analyser:
         return self.json_results
 
 class error_analyser:
-    def __init__(self,error_count,error_ip4_count,error_ip6_count,error_ip_lookup,error_roa_lookup,errors,file_length):
+    def __init__(self,error_count,error_ip4_count,error_ip6_count,error_ip_lookup,error_roa_lookup,errors,file_length,loopback_ipv4_error,loopback_ipv6_error):
 
         self.json_results                           =   {}
 
@@ -91,6 +98,16 @@ class error_analyser:
         self.json_results['error_ip_lookup_p']      =   create_percentage(error_count,error_ip_lookup)
         self.json_results['error_roa_lookup']       =   error_roa_lookup
         self.json_results['error_roa_lookup_p']     =   create_percentage(error_count,error_roa_lookup)
+
+        total_loopback_errors                       =   loopback_ipv4_error + loopback_ipv6_error
+        self.json_results['error_loopback_total']   =   total_loopback_errors
+        self.json_results['error_loopback_total_p'] =   create_percentage(error_count,total_loopback_errors)
+
+        self.json_results['error_loopback_ipv4']    =   loopback_ipv4_error
+        self.json_results['error_loopback_ipv4_p']  =   create_percentage(error_count,loopback_ipv4_error)
+
+        self.json_results['error_loopback_ipv6']    =   loopback_ipv6_error
+        self.json_results['error_loopback_ipv6_p']  =   create_percentage(error_count,loopback_ipv6_error)
 
         self.errors                                 =   errors
 
@@ -213,6 +230,8 @@ def error_checker(json_file):
     errors_ip6          =   0
     errors_ip_lookup    =   0
     errors_roa_lookup   =   0
+    loopback_ipv4_error =   0
+    loopback_ipv6_error =   0
     errors              =   []
 
     file_length         =   len(json_file)
@@ -246,6 +265,11 @@ def error_checker(json_file):
                 error_ip4 = True
             if (is_row_empty(single_row['ip4_address'])):
                 error_ip6 = True
+        ip = get_ip(single_row)
+        if ( ip == '127.0.0.1' or ip == '127.0.0.2'):
+            loopback_ipv4_error+=1
+        if ( ip == '::1' ):
+            loopback_ipv6_error+=1
 
         if (error_complete == True):
             errors_complete += 1
@@ -259,7 +283,7 @@ def error_checker(json_file):
         if (error_roa_lookup):
             errors_roa_lookup +=1
 
-    return error_analyser(errors_complete,errors_ip4,errors_ip6,errors_ip_lookup,errors_roa_lookup,errors,file_length)
+    return error_analyser(errors_complete,errors_ip4,errors_ip6,errors_ip_lookup,errors_roa_lookup,errors,file_length,loopback_ipv4_error,loopback_ipv6_error)
 
 def sort_by(json_file,sort_value):
 
@@ -348,7 +372,7 @@ def ordered_list_checker(ordered_list):
 
     return ordered_list_analyser(file_length,complete_protected,partial_protected,file_length,complete_protected_list,partial_protected_list,unprotected_list)
 
-def tester(json_file,asn_ordered,prefix_ordered,error_results,tot,country,country_code):
+def tester(json_file,asn_ordered,prefix_ordered,error_results,tot,country,country_code,ns_address_ordered):
 
     json_results                    =   {}
 
@@ -358,6 +382,7 @@ def tester(json_file,asn_ordered,prefix_ordered,error_results,tot,country,countr
     json_results['roa_validity']    =   roa_checker(json_file,tot,country,country_code).json_object()
     json_results['asn']             =   ordered_list_checker(asn_ordered).json_object()
     json_results['prefix']          =   ordered_list_checker(prefix_ordered).json_object()
+    json_results['ns_address']      =   ordered_list_checker(ns_address_ordered).json_object()
     json_results['errors']          =   error_results.json_object()
 
     return json_results
@@ -442,6 +467,7 @@ def generate_report(settings):
         asn_ordered                     =   sort_by(input_file,'asn')
         prefix_ordered                  =   sort_by(input_file,'prefix')
         roa_ordered                     =   sort_by(input_file,'valid_roa')
+        ns_address_ordered              =   sort_by(input_file,'ns_address')
 
         # Sort for unique IP's
 
@@ -450,6 +476,7 @@ def generate_report(settings):
         unique_asn_ordered              =   sort_by(unique_ip_list,'asn')
         unique_prefix_ordered           =   sort_by(unique_ip_list,'prefix')
         unique_roa_ordered              =   sort_by(unique_ip_list,'valid_roa')
+        unique_ns_address_ordered       =   sort_by(unique_ip_list,'ns_address')
 
         # Can we run some additional tests?
 
@@ -468,9 +495,9 @@ def generate_report(settings):
         # Run tests
 
         error_results                   =   error_checker(input_file)
-        report_dict['domain']           =   tester(input_file,asn_ordered,prefix_ordered,error_results,tot,country,country_code)
+        report_dict['domain']           =   tester(input_file,asn_ordered,prefix_ordered,error_results,tot,country,country_code,ns_address_ordered)
         unique_error_results            =   error_checker(unique_ip_list)
-        report_dict['ip']               =   tester(input_file,unique_asn_ordered,unique_prefix_ordered,unique_error_results,False,False,country_code)
+        report_dict['ip']               =   tester(input_file,unique_asn_ordered,unique_prefix_ordered,unique_error_results,False,False,country_code,unique_ns_address_ordered)
 
     else:
         print (u'\u2717'+' All basic arguments')
