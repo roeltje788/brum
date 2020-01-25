@@ -196,7 +196,7 @@ def roa_checker(json_file,tot,country,country_code):
 
         # Count total number of countries in file
 
-        if (single_row['country'] == country_code):
+        if (country and single_row['country'] == country_code):
             total_for_country_code+=1
 
         # Calculate ROA results
