@@ -191,5 +191,6 @@ Having all dependecies for Brum (see section dependencies) and a python3 interpe
 
 ## File size limitations
 
-There is no limitations on the filesize. Brum loops through the file and does not store the whole file in memory. This way any filesize can be used (apart from Python or system limitations).
+There is no limitations on the filesize. Brum loops through the file and does not store the whole file in memory. This way any filesize can be used (apart from Python or system limitations). The exception to this rule is the report mode. Make sure you have enough RAM in order to handle the larger files. In case there is not enough memory Brum will fail.
+
 
