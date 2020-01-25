@@ -69,7 +69,7 @@ python3 brum.py <mode> <additional commands>
 ```
 
 ### Mode: 
-This is the mode that Brum will run in. The different modes are:
+This is the mode that Brum will run in. The mode name can be typed directly after 'python3 brum.py' in order to use this mode. The different modes are:
 
 - lookup       :   Brum will analyse a list of ip-addresses (must be a JSON file)
 ```
@@ -112,7 +112,6 @@ Example: python3 brum.py rootreport -i <filelocation> -r <referencefile>
 ```
 Note: Both <filelocation> and <referencefile> should be of type .csv. 
 
-The mode name can be typed directly after 'python3 brum.py' in order to use this mode.
 
 ### Additional commands:
 These arguments can differ from mode to mode, but generally either or both an input file and an output are required.
