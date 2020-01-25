@@ -91,6 +91,7 @@ This program makes use of several sources:
 ### TLD list
 This list is originally from IANA: https://www.iana.org/domains/root/db
 Though since IANA does not provide the list as csv, the following list is used which uses the IANA list as source: https://raw.githubusercontent.com/gh0stwizard/iana-tld-extractor/master/tld.csv
+Several TLD's have been added by hand in this file. The file is inside the 'tld' folder.
 
 ### Wikipedia public resolvers
 There is no official list of public resolvers to test the RPKI deployment. 
@@ -123,7 +124,7 @@ CSV is the supported filetype. This way Brum can read the file line by line and 
 
 ## Supported output filetypes
 
-Every output file of Brum will be of type .json. 
+When using the lookup mode or rootreport mode the output file will be a .csv file. In any other case the output file will be of type .json.
 
 ## Supported operating systems
 
