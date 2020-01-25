@@ -34,7 +34,8 @@ Different questions about the RPKI deployment in the list provided will be answe
 Such as, but not limited: How many have RPKI deployed? What is the difference in ipv4 and ipv6?
 These answers are written to a .json file. 
 
-TODO: different information depending on what arguments in the supplied file, what arguments?
+Depending on which arguments are provided (mandatory and optional arguments in step 0), brum will create a report. If at least one of the mandatory arguments are missing or named differently, Brum will not create a report!
+Again, the more arguments given the more information Brum will generate.
 
 #### Why the split?
 
@@ -42,7 +43,7 @@ Step 1 is network intensive and step 2 is CPU and RAM intensive.
 By this division, step 1 and 2 can be run on a different machine if needed.
 
 In addition, if other functions will be added to Brum in the future, there is no need to ask RIPE again.
-The file in step 1 can used again in step 2 giving more information in the second run. 
+The file in step 1 can used again in step 2 giving more information in the second run. Especially if the file in step 1 is large the time for step 2 will be significantly less. 
 
 ## Dependencies
 
