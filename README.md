@@ -72,7 +72,17 @@ python3 brum.py <mode> <additional commands>
 This is the mode that Brum will run in. The different modes are:
 <br />
 <br />
-TODO: list modes 
+
+1. lookup       :   Brum will analyse a list of ip-addresses (must be a JSON file)
+2. batchlookup  :   Same functionality as mode lookup, but lookup will run for every line in the specified file
+3. report       :   Brum will use a file created by *analyse* and generate information about this file
+4. batchreport  :   Same functionality as mode report, but report will run for every line in the specified file
+5. getroothints :   Brum will download all the Authorative Hint Root servers from IANA
+6. getrootzone  :   Brum will download all the Authorative Root servers from IANA
+7. domainreport :   Brum will crossreference a file with an already checked file with DNS servers
+8. rootreport   :   Brum will analyse a root zone file and will give more specific information then the report mode
+
+The mode name can be typed directly after 'python3 brum.py' in order to use this mode.
 
 ### Additional commands:
 These arguments can differ from mode to mode, but generally either or both an input file and an output are required.
