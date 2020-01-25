@@ -70,8 +70,6 @@ python3 brum.py <mode> <additional commands>
 
 ### Mode: 
 This is the mode that Brum will run in. The different modes are:
-<br />
-<br />
 
 1. lookup       :   Brum will analyse a list of ip-addresses (must be a JSON file)
 2. batchlookup  :   Same functionality as mode lookup, but lookup will run for every line in the specified file
