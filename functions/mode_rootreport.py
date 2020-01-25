@@ -14,6 +14,14 @@ import math
 
 # FUNCTIONS
 
+def create_percentage (total,part):
+
+    if (total == 0):
+        return 0
+
+    percentage = (round((part/total)*100,2))
+    return percentage
+
 def is_ip_ipv6(input):
 
     if (input['ip6_address'] == 'NULL' or input['ip6_address'] == ''):
@@ -70,6 +78,15 @@ def update_result(tmp_result,input_line):
         else:
             tmp_result['ipv4_protected']+=1
 
+
+    # Update percentages
+
+    tmp_result['total_protected_p']    =   create_percentage (tmp_result['total'],tmp_result['total_protected'])
+    tmp_result['ipv4_total_p']         =   create_percentage (tmp_result['total'],tmp_result['ipv4_total'])
+    tmp_result['ipv4_protected_p']     =   create_percentage (tmp_result['ipv4_total'],tmp_result['ipv4_protected'])
+    tmp_result['ipv6_total_p']         =   create_percentage (tmp_result['total'],tmp_result['ipv6_total'])
+    tmp_result['ipv6_protected_p']     =   create_percentage (tmp_result['ipv6_total'],tmp_result['ipv6_protected'])
+
     return tmp_result
 
 def get_base_result(tmp_TLD,type):
@@ -79,14 +96,16 @@ def get_base_result(tmp_TLD,type):
         'type': type,
         'total':0,
         'total_protected':0,
+        'total_protected_p':0,
         'ipv4_total':0,
+        'ipv4_total_p':0,
         'ipv4_protected':0,
+        'ipv4_protected_p':0,
         'ipv6_total':0,
-        'ipv6_protected':0
+        'ipv6_total_p':0,
+        'ipv6_protected':0,
+        'ipv6_protected_p':0
     }
-
-    if (tmp_TLD == 'cpa'):
-        print(tmp_single_TLD_report)
 
     return  tmp_single_TLD_report
 
@@ -140,6 +159,7 @@ class analyser_obj(thread_obj):
             if (len(tmp_result) != 0): # Does this TLD exist in the reference?
                 result[tmp_TLD] = update_result(tmp_result,input_line)
             else:
+                print ('error with TLD: {}'.format(tmp_TLD))
                 result['errors']+=1
 
         writer_queue.put(result)
@@ -149,10 +169,15 @@ def get_basic_deep_result():
     tmp         =   {
         'total':0,
         'total_protected':0,
+        'total_protected_p':0,
         'ipv4_total':0,
+        'ipv4_total_p':0,
         'ipv4_protected':0,
+        'ipv4_protected_p':0,
         'ipv6_total':0,
-        'ipv6_protected':0
+        'ipv6_total_p':0,
+        'ipv6_protected':0,
+        'ipv6_protected_p':0
     }
 
     return tmp
@@ -180,6 +205,20 @@ def deep_analyser(final_results,errors):
         deep_results[row['type']]['ipv4_protected']     +=  row['ipv4_protected']
         deep_results[row['type']]['ipv6_total']         +=  row['ipv6_total']
         deep_results[row['type']]['ipv6_protected']     +=  row['ipv6_protected']
+
+    # Generate percentages
+
+    tld_types = ['generic','country-code','sponsored','infrastructure','generic-restricted']
+
+    for tld_type in tld_types:
+
+        tmp_deep_result = deep_results[tld_type]
+
+        tmp_deep_result['total_protected_p']    =   create_percentage (tmp_deep_result['total'],tmp_deep_result['total_protected'])
+        tmp_deep_result['ipv4_total_p']         =   create_percentage (tmp_deep_result['total'],tmp_deep_result['ipv4_total'])
+        tmp_deep_result['ipv4_protected_p']     =   create_percentage (tmp_deep_result['ipv4_total'],tmp_deep_result['ipv4_protected'])
+        tmp_deep_result['ipv6_total_p']         =   create_percentage (tmp_deep_result['total'],tmp_deep_result['ipv6_total'])
+        tmp_deep_result['ipv6_protected_p']     =   create_percentage (tmp_deep_result['ipv6_total'],tmp_deep_result['ipv6_protected'])
 
     return deep_results
 
