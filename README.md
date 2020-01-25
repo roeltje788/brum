@@ -4,7 +4,7 @@ Brum is a RPKI deployment analysis tool.
 
 ## Workflow
 
-Brum is meant to be used in the following order:
+Brum has different types of modes. In most of the cases the workflow will look similar to the following order:
 
 ### 0: Get zone file
 First a file should be created with the zone file to be used by Brum.
@@ -14,8 +14,16 @@ There are 3 options:
 -Own zone file: any right formatted .json file with the correct arguments (see below) can be used as input to Brum in the next step.
 <br />
 <br />
-TODO: how should this file look like?
 
+Certain arguments are mandatory, some others are for getting additional arguments in the report function. 
+```
+Mandatory: ns_address,ip4_address,ip6_address,asn,prefix
+```
+```
+Optional: tot,country
+```
+- Note: make sure that either the ipv4 or ipv6 address is empty or equal to NULL. In that case Brum will use the other address.
+- Note: the tot and country argument can be used seperatly or both. The more arguments are provided the more information the report function will generate later on.
 ### 1: Lookup file
 The next step is to lookup a provided file. By lookup is meant to get the certain information (currently: prefix,ASN and if a RPKI certificate is for this prefix) from RIPE. 
 These results are then written to a .json file at the desired location.
@@ -27,10 +35,6 @@ Such as, but not limited: How many have RPKI deployed? What is the difference in
 These answers are written to a .json file. 
 
 TODO: different information depending on what arguments in the supplied file, what arguments?
-
-#### Why write to a .json file?
-
-By writing to a .json file, the answers can be used by another program. 
 
 #### Why the split?
 
