@@ -73,15 +73,44 @@ This is the mode that Brum will run in. The different modes are:
 
 1. lookup       :   Brum will analyse a list of ip-addresses (must be a JSON file)
 ```
-test
+Example: python3 brum.py lookup -i <filelocation>
 ```
+Note: <filelocation> should contain the folder,filename and the extension (should always be .csv). Example: /home/user/file.csv
 2. batchlookup  :   Same functionality as mode lookup, but lookup will run for every line in the specified file
+```
+Example: python3 brum.py batchlookup -i <filelocation>
+```
+Note: The file should contain one filelocation per line, as would be used in mode lookup (don't end with any delimiter like ',' or '.'. ONLY put the filename)
 3. report       :   Brum will use a file created by *analyse* and generate information about this file
+```
+Example: python3 brum.py report -i <filelocation> -c <2 letter country code (e.g. NL,US)>
+```
+Note: <filelocation> file should be of the same structure as in lookup mode. The input file should come from the output from the lookup mode.
 4. batchreport  :   Same functionality as mode report, but report will run for every line in the specified file
+```
+Example: python3 brum.py batchreport -i <filelocation>
+```
+Note: put on each line the file to use followed by a comma and the country code to look for (e.g. /home/user/file.csv,NL). Don't use any delimiter!
 5. getroothints :   Brum will download all the Authorative Hint Root servers from IANA
+```
+Example: python3 brum.py getroothints -o <foldername>
+```
+Note: only put the folder name here (e.g. /home/user/folder/). Always end with an '/'. The output in the folder will be 1 hints.csv and one hints.json file. Make sure the folder exists!
 6. getrootzone  :   Brum will download all the Authorative Root servers from IANA
+```
+Example: python3 brum.py getrootzone -o <foldername>
+```
+Note: only put the folder name here (e.g. /home/user/folder/). Always end with an '/'. The output in the folder will be 1 zone.csv and one zone.json file. Make sure the folder exists
 7. domainreport :   Brum will crossreference a file with an already checked file with DNS servers
+```
+Example: python3 brum.py domainreport -i <filelocation> -r <referencefile>
+```
+Note: <filelocation> should have a similar form as in mode 'lookup'. The <referencefile> should be of type .json (any other case similar to mode 'lookup' ). 
 8. rootreport   :   Brum will analyse a root zone file and will give more specific information then the report mode
+```
+Example: python3 brum.py rootreport -i <filelocation> -r <referencefile>
+```
+Note: Both <filelocation> and <referencefile> should be of type .csv. 
 
 The mode name can be typed directly after 'python3 brum.py' in order to use this mode.
 
