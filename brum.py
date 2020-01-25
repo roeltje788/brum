@@ -86,6 +86,7 @@ def main(argv):
         generate_domainreport(settings)
     elif (settings.mode == 'rootreport'):
         generate_rootreport(settings)
+    # ADD FUNCTION HERE
     else:
         print ('That mode is not (yet) supported.')
 

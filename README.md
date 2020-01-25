@@ -82,7 +82,17 @@ These arguments can differ from mode to mode, but generally either or both an in
 Currently Brum supports a certain amount of functions as described in the "mode" subsection under Arguments. 
 Additional features may be required in the future. These can be added as follows:
 
-TODO: explain how to add a function 
+1. Go the functions folder
+2. Add another file with the convention mode_<NEW_FUNCTION_NAME>.py
+3. Add at least one function to this file
+4. go one folder up and open up the brum.py file
+5. add the top import the file under the comment "folder:functions"
+6. scroll down to the main function in the same file, almost at the end (inside the if else function) is a comment "ADD FUNCTION HERE"
+7. create a new elif statement, call the function from step 3 and make sure the settings.mode is equal to the name of the file you created in step 2
+8. close the file and go to the settings folder and open the settings.json file
+9. This file is used to inform Brum about the new function (Brum will make this function a new mode argument after adding)
+10. Go to the 'supported' part and create a new line with a similar structure as the previous lines (as follows '':''). Make sure to end the previous line with an ','! Otherwise Brum will fail. Make sure the name is the same as the file in step 2 and inside the if else statement in step 6
+11. Add anything you would like to your newly created file! That's it!
 
 ## Sources
 
