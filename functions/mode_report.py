@@ -1,4 +1,4 @@
-###GENERAL####
+##GENERAL####
 import json
 import csv
 import sys
@@ -22,6 +22,13 @@ def write_json_file(json_data,location):
 
     with open(location, "w") as output:
         output.write(json.dumps(json_data, indent=4))
+
+def is_ip_ipv4(input):
+
+    if (input['ip4_address'] == 'NULL' or input['ip4_address'] == ''):
+        return False
+    else:
+        return True
 
 def get_ip(input):
 
@@ -48,7 +55,7 @@ def is_row_empty(value):
 ##CLASSES####
 
 class roa_analyser:
-    def __init__(self,file_length,valid_roas,valid_ip4_roas,valid_ip6_roas,tot,protected_ip4_domains,protected_ip6_domains,country,protected_ip4_country,protected_ip6_country,protected_ip4_country_domains,protected_ip6_country_domains,country_code,total_for_country_code):
+    def __init__(self,file_length,valid_roas,valid_ip4_roas,valid_ip6_roas,tot,protected_ip4_domains,protected_ip6_domains,country,protected_ip4_country,protected_ip6_country,protected_ip4_country_domains,protected_ip6_country_domains,country_code,total_for_country_code,total_domains):
 
         self.json_results                           =   {}
 
@@ -59,9 +66,14 @@ class roa_analyser:
         self.json_results['valid_ip6_roas']         =   valid_ip6_roas
         self.json_results['valid_ip6_roas_p']       =   create_percentage(valid_roas,valid_ip6_roas)
         if (tot):
-            self.json_results['protected_domains']      =   protected_ip4_domains + protected_ip6_domains
-            self.json_results['protected_ip4_domains']  =   protected_ip4_domains
-            self.json_results['protected_ip6_domains']  =   protected_ip6_domains
+            protected_domains                               =   protected_ip4_domains + protected_ip6_domains
+            self.json_results['domains_total']              =   total_domains
+            self.json_results['domains_protected']          =   protected_domains
+            self.json_results['domains_protected_p']        =   create_percentage(total_domains,protected_domains)
+            self.json_results['domains_ip4_protected']      =   protected_ip4_domains
+            self.json_results['domains_ip4_protected_p']    =   create_percentage(protected_domains,protected_ip4_domains)
+            self.json_results['domains_ip6_protected']      =   protected_ip6_domains
+            self.json_results['domains_ip6_protected_p']    =   create_percentage(protected_domains,protected_ip6_domains)
         if (country):
 
             protected_country_code                                      =   protected_ip4_country + protected_ip6_country
@@ -190,6 +202,8 @@ def roa_checker(json_file,tot,country,country_code):
 
     total_for_country_code              =   0
 
+    total_domains                       =   0
+
     file_length = len(json_file)
 
     for single_row in json_file:
@@ -198,6 +212,11 @@ def roa_checker(json_file,tot,country,country_code):
 
         if (country and single_row['country'] == country_code):
             total_for_country_code+=1
+
+        # If tot argument exists, add up all the domains to get a total
+
+        if ( tot ):
+            total_domains+= int(single_row['tot'])
 
         # Calculate ROA results
 
@@ -221,7 +240,7 @@ def roa_checker(json_file,tot,country,country_code):
                         protected_ip6_country_domains+= int(single_row['tot'])
 
 
-    return roa_analyser(file_length,protected_complete,protected_ip4,protected_ip6,tot,protected_ip4_domains,protected_ip6_domains,country,protected_ip4_country,protected_ip6_country,protected_ip4_country_domains,protected_ip6_country_domains,country_code,total_for_country_code)
+    return roa_analyser(file_length,protected_complete,protected_ip4,protected_ip6,tot,protected_ip4_domains,protected_ip6_domains,country,protected_ip4_country,protected_ip6_country,protected_ip4_country_domains,protected_ip6_country_domains,country_code,total_for_country_code,total_domains)
 
 def error_checker(json_file):
 
@@ -372,6 +391,19 @@ def ordered_list_checker(ordered_list):
 
     return ordered_list_analyser(file_length,complete_protected,partial_protected,file_length,complete_protected_list,partial_protected_list,unprotected_list)
 
+def ipv4_counter(json_file):
+
+    ipv4_count  =   0
+
+    for row in json_file:
+
+        if( is_ip_ipv4(row) == True ):
+            ipv4_count+=1
+
+
+    return ipv4_count
+
+
 def tester(json_file,asn_ordered,prefix_ordered,error_results,tot,country,country_code,ns_address_ordered):
 
     json_results                    =   {}
@@ -379,6 +411,8 @@ def tester(json_file,asn_ordered,prefix_ordered,error_results,tot,country,countr
     file_length                     =   len(json_file)
 
     json_results['row_count']       =   file_length
+    json_results['total_ipv4']      =   ipv4_counter(json_file)
+    json_results['total_ipv6']      =   file_length - json_results['total_ipv4']
     json_results['roa_validity']    =   roa_checker(json_file,tot,country,country_code).json_object()
     json_results['asn']             =   ordered_list_checker(asn_ordered).json_object()
     json_results['prefix']          =   ordered_list_checker(prefix_ordered).json_object()

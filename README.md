@@ -37,6 +37,8 @@ These answers are written to a .json file.
 Depending on which arguments are provided (mandatory and optional arguments in step 0), brum will create a report. If at least one of the mandatory arguments are missing or named differently, Brum will not create a report!
 Again, the more arguments given the more information Brum will generate.
 
+**Note:** when the input file contains the tot argument, Brum will sum up and indicate the amount of IPv4 and IPv6 protected domains from the total amount of domains. Though keep in mind that if multiple DNS servers are responsible for the same domain (which is almost always the case), then domains will be counted multiple times. Use this data with caution!
+
 #### Why the split?
 
 Step 1 is network intensive and step 2 is CPU and RAM intensive. 
